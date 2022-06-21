@@ -4,18 +4,32 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>mac symbol</title>
 <style>
-	.mono {font-family: monospace, "Courier New";}
+	.mono {font-family: monospace, "Courier New"; font-size: 12px;}
 	.spaces {white-space: pre-wrap;}
+	.good {color: green;}
+	.bad {color: red}
 </style>
 </head>
 
 <body>
-<table width="800">
+<br>testing why mac symbol font is not detected when devicePixelRatio == 1<br><br>
+<table width="670">
 <col width="50%"><col width="50%">
 <tr>
 	<td><button onClick="getFonts(1)"> run 1 </button></td>
 	<td><button onClick="getFonts(2)"> run 2 </button></td>
 </tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr>
+	<td><div id="base1" class="mono spaces"></div></td>
+	<td><div id="base2" class="mono spaces"></div></td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr>
+	<td><div id="detect1" class="mono spaces"></div></td>
+	<td><div id="detect2" class="mono spaces"></div></td>
+</tr>
+<tr><td colspan="2"><hr></td></tr>
 <tr>
 	<td><div id="run1" class="mono spaces"></div></td>
 	<td><div id="run2" class="mono spaces"></div></td>
@@ -24,6 +38,11 @@
 
 <script>
 'use strict';
+
+let s0 = "<span class='",
+	sb = s0+"bad'>",
+	sg = s0+"good'>",
+	sc = "</span>"
 
 function mini(str, call, log = true) {
 	// https://stackoverflow.com/a/22429679
@@ -38,8 +57,10 @@ function mini(str, call, log = true) {
 
 function getFonts(runtype) {
 	try {
-		let baseFonts = ['monospace','sans-serif','serif','symbol','-apple-system']
+		let baseFonts = ['monospace','sans-serif','serif','-apple-system',]
 		let fntStrA = "mmmLLLmmmWWWwwwmmmllliii"
+
+		let fntList = ['Arial','I Am a Fake Font','Symbol']
 
 		const doc = document
 		const id = `font-fingerprint`
@@ -85,6 +106,9 @@ function getFonts(runtype) {
 			const style = getComputedStyle(span)
 			const pixelsToNumber = pixels => +pixels.replace('px','')
 			const originPixelsToNumber = pixels => 2*pixels.replace('px', '')
+			const detectedViaPixelNumber = new Set()
+			const detectedViaOffset = new Set()
+			const detectedViaTransformNumber = new Set()
 
 			const getDimensions = (span, style) => {
 				const transform = style.transformOrigin.split(' ')
@@ -108,14 +132,80 @@ function getFonts(runtype) {
 			let display = []
 			for (const k of Object.keys(base)) {
 				display.push("<u>"+ k + "</u>")
-				display.push("      offset:" + base[k]["offsetWidth"] + " x " + base[k]["offsetHeight"])
-				display.push("      npixel:" + base[k]["npixelWidth"] + " x " + base[k]["npixelHeight"])
-				display.push("  ntransform:" + base[k]["ntransformWidth"] + " x " + base[k]["ntransformHeight"])
+				display.push("      offset: " + base[k]["offsetWidth"] + " x " + base[k]["offsetHeight"])
+				display.push("      npixel: " + base[k]["npixelWidth"] + " x " + base[k]["npixelHeight"])
+				display.push("  ntransform: " + base[k]["ntransformWidth"] + " x " + base[k]["ntransformHeight"])
 			}
 			let hash = mini(base)
+			let element = document.getElementById("base"+ runtype)
+			element.innerHTML = "<b><u>BASEFONTS:</u></b> " + hash +"<br><br>" + display.join("<br>")
 
-			let element = document.getElementById("run"+ runtype)
-			element.innerHTML = "<br>" + hash +"<br><br>" + display.join("<br>")
+			let aTestsValid = [
+				["offset", detectedViaOffset],
+				["npixel", detectedViaPixelNumber],
+				["ntransform", detectedViaTransformNumber],
+			]
+
+			let isDetected = false
+			let oResults = {}
+			fntList.forEach(font => {
+				oResults[font] = {}
+				baseFonts.forEach(basefont => {
+					oResults[font][basefont] = []
+					isDetected = false // reset
+					const family = "'"+ font +"', "+ basefont
+					span.style.setProperty('--font', family)
+					const style = getComputedStyle(span)
+					const dimensions = getDimensions(span, style)
+					basefont = basefont.split(",")[0] // switch to short generic name
+					aTestsValid.forEach(function(pair) {
+						let wName = pair[0] +"Width", hName = pair[0] +"Height"
+						if (dimensions[wName] != base[basefont][wName] || dimensions[hName] != base[basefont][hName]) {
+							pair[1].add(font +":"+ basefont +":"+ dimensions[wName] +" x "+ dimensions[hName])
+							isDetected = true
+						}
+						oResults[font][basefont].push(pair[0].padStart(12))
+						oResults[font][basefont].push("base: ".padStart(20) + base[basefont][wName] +" x "+ base[basefont][hName])
+						oResults[font][basefont].push("got: ".padStart(20) + dimensions[wName] +" x "+ dimensions[hName])
+						oResults[font][basefont].push("result: ".padStart(20) + (isDetected ? sg+ "detected" : sb+ "not detected") + sc)
+					})
+					return
+				})
+			})
+
+			// detected
+			const fontsOffset = [...detectedViaOffset]
+			const fontsPixelNumber = [...detectedViaPixelNumber]
+			const fontsTransformNumber = [...detectedViaTransformNumber]
+			let fontsAll = fontsOffset.concat(fontsPixelNumber)
+			fontsAll = fontsAll.concat(fontsTransformNumber)
+			hash = mini(fontsAll)
+			//console.debug(fontsOffset)
+			//console.debug(fontsPixelNumber)
+			//console.debug(fontsTransformNumber)
+			//console.debug(fontsAll)
+			display = ["<u><b>DETECTED:</b></u> " + hash +"<br>"]
+			display.push("offset: <br>" + (fontsOffset.length ? " - "+ fontsOffset.join("<br> - ") : " - nothing found" ) +"<br>")
+			display.push("npixel: <br>" + (fontsPixelNumber.length ? " - "+ fontsPixelNumber.join("<br> - ") : " - nothing found" ) +"<br>")
+			display.push("ntransform: <br>" + (fontsTransformNumber.length ? " - "+ fontsTransformNumber.join("<br> - ") : " - nothing found" ) +"<br>")
+			element = document.getElementById("detect"+ runtype)
+			element.innerHTML = display.join("<br>")
+
+			// detailed results
+			//console.debug(oResults)
+			display = []
+			for (const k of Object.keys(oResults).sort()) {
+				display.push("<br><b><u>"+ k +"</u></b>")
+				for (const j of Object.keys(oResults[k])) {
+					display.push("* <u>"+ j +"</u>")
+					let tmpArray = oResults[k][j]
+					display.push(tmpArray.join("<br>") +"<br>")
+				}
+			}
+
+			hash = mini(display)
+			element = document.getElementById("run"+ runtype)
+			element.innerHTML = "<b><u>DETAIL:</u></b> " + hash +"<br>"+ display.join("<br>")
 
 	} catch(e) {
 		console.debug(e.name, e.message)
