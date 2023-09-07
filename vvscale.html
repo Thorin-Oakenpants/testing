@@ -5,15 +5,19 @@
 <title>vvscale</title>
 <style>
 	.mono {font-family: monospace, "Courier New"; font-size: 16px;}
-	.big {font-size: 48px;}
+	.big {font-size: 32px;}
+	div.fixed {
+		position: fixed;
+		top: 10;
+		left: 10;
+	}
 </style>
 </head>
 
 <body>
-<br>
-<span class="mono">
-visualViewport.scale<br><span class="big" id="vvscale"></span>
-</span>
+<div class="fixed">
+visualViewport.scale<br><span class="big mono" id="vvscale"></span>
+</div>
 
 <script>
 'use strict';
@@ -28,6 +32,7 @@ function get_scale() {
 }
 
 try {
+	// event fires with normal zoom and pinch to zoom
 	visualViewport.onresize = () => {
 		get_scale()
 	}
