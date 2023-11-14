@@ -24,7 +24,6 @@ const get_window_cache = () => new Promise(resolve => {
 			window.caches.keys()
 		]).then(function(results){
 console.log(results)
-			addDataDisplay(6, METRIC, zS)
 			return resolve("success")
 		})
 	} catch(e) {
