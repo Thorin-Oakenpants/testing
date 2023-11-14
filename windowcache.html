@@ -14,21 +14,15 @@ result: <span id="result"></span>
 'use strict';
 
 const get_window_cache = () => new Promise(resolve => {
-	// Uncaught (in promise) DOMException: The operation is insecure.
-	if (location.protocol !== "https:") {
-		return resolve("n/a")
-	}	
-	// PB mode: 
-	try {
-		Promise.all([
-			window.caches.keys()
-		]).then(function(results){
-console.log(results)
-			return resolve("success")
-		})
-	} catch(e) {
+	// PB mode: Uncaught (in promise) DOMException: The operation is insecure.
+	Promise.all([
+		window.caches.keys()
+	]).then(function(results){
+		return resolve("success")
+	})
+	.catch(function(e){
 		return resolve(e+"")
-	}
+	})
 })
 
 Promise.all([
