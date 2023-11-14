@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>window cache keys</title>
+</head>
+
+<body>
+<div>
+result: <span id="result"></span>
+</div>
+
+<script>
+'use strict';
+
+const get_window_cache = () => new Promise(resolve => {
+	// Uncaught (in promise) DOMException: The operation is insecure.
+	if (location.protocol !== "https:") {
+		return resolve("n/a")
+	}	
+	// PB mode: 
+	try {
+		Promise.all([
+			window.caches.keys()
+		]).then(function(results){
+console.log(results)
+			addDataDisplay(6, METRIC, zS)
+			return resolve("success")
+		})
+	} catch(e) {
+		return resolve(e+"")
+	}
+})
+
+Promise.all([
+	get_window_cache(),
+]).then(function(results){
+	document.getElementById("result").innerHTML = results[0]
+})
+
+</script>
+</body>
+</html>
