@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>gillsans</title>
+	<style>
+		#container {
+			container-type: inline-size;
+			font-family: "Gill Sans";
+			font-size: 6px;
+			width: 1cap;
+		}
+		#installed {
+			display: block;
+		}
+		#notinstalled {
+			display: none;
+		}
+		@container (width < 4px) {
+			#installed {
+				display: none;
+			}
+			#notinstalled {
+				display: block;
+				background-image: url(/not-installed);
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+<div id="container">
+	<p id="installed">Installed</p>
+	<p id="notinstalled">Not Installed</p>
+</div>
+
+<script>
+</script>
+</body>
+</html>
