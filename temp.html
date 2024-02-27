@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p id= "date"></p>
+<p id= "last"></p>
+
+<script>
+'use strict';
+
+	let options = {day: '2-digit', month: '2-digit', year: 'numeric', hour12: false, hour: '2-digit', minute: 'numeric', second: 'numeric'}
+	let event = new Date()
+	document.getElementById("date").innerHTML = event.toLocaleDateString(undefined, options)
+
+	let oList = {
+		AttributeParsingErrorNoTag: '<math id="AttributeParsingErrorNoTag" scriptlevel="."></math>',
+		DuplicateMprescripts: '<math id="DuplicateMprescripts"><mmultiscripts><mprescripts/><mprescripts/></mmultiscripts></math>',
+	}
+	let oMimeTypes = ['application/xml','application/xhtml+xml','image/svg+xml','text/html','text/xml',]
+	let aLast = []
+	let parser = new DOMParser
+	try {
+		oMimeTypes.forEach(function(mimetype) {
+			try {
+				let pDoc = parser.parseFromString('<p></p>', mimetype)
+				let last = pDoc.activeElement.parentNode.lastModified
+				aLast.push(last + " | " + mimetype)
+			} catch(err) {
+				console.log(mimetype, err)
+				aLast.push("error | " + mimetype)
+			}
+		})
+		//console.log(aLast)
+		document.getElementById("last").innerHTML = aLast.join("<br>")
+	} catch(e) {
+		console.log(e)
+	}
+</script>
+
+</body>
+</html>
