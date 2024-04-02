@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>svg fallback</title>
+<style>
+img, object, div, svg {
+	display: block;
+	width: 48px; height: 48px;
+}
+div.one {
+	background-image: url("svgfallback.png");
+  background-image: url("svgfallback.svg"), linear-gradient(transparent, transparent);
+}
+div.two {
+	background: url("svgfallback.png");
+  background: url("svgfallback.svg"), linear-gradient(transparent, transparent);
+}
+</style>
+</head>
+
+<body>
+
+thanks to <a href="https://css-tricks.com/a-complete-guide-to-svg-fallbacks/">css-tricks.com</a>
+
+<br><br>
+<img src="svgfallback.svg" data-fallback="svgfallback.png"> &lt;img&gt;
+
+<br><br>
+<picture>
+  <source type="image/svg+xml" srcset="svgfallback.svg">
+  <img src="svgfallback.png" alt="">
+</picture> &lt;picture&gt;
+
+<br><br>
+<object type="image/svg+xml" data="svgfallback.svg">
+  <img src="svgfallback.png">
+</object> &lt;object&gt;
+
+<br><br>
+<div class="one"></div> background-image
+
+<br><br>
+<div class="two"></div> background
+
+<br><br>
+<div>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 40 40">
+	<desc></desc>
+	<circle fill="limegreen" r="19"/>
+	<path stroke="forestgreen" fill="none" stroke-width="6" d="M-12,3 L-3,10 11,-12"/>
+	<text dy="0.35em" text-anchor="middle" font-weight="bold" font-size="18px" font-family="sans-serif" fill="indigo">SVG</text>
+</svg>
+</div> inline svg
+
+
+</body>
+</html>
+
+

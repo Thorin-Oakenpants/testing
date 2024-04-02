@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 40 40">
+	<circle fill="limegreen" r="19"/>
+	<path stroke="forestgreen" fill="none" stroke-width="6" d="M-12,3 L-3,10 11,-12"/>
+	<text dy="0.35em" text-anchor="middle" font-weight="bold" font-size="18px" font-family="sans-serif" fill="indigo">SVG</text>
+</svg>
