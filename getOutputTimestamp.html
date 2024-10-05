@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>getOutputTimestamp</title>
+  </head>
+
+  <body>
+    <h2>getOutputTimestamp</h2>
+    <button id="run">run</button> &nbsp; <span>default is 20 measurements: change "limit" in console to increase this</span>
+    <div><br><output></output></div>
+
+<script>
+'use strict';
+	// https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/getOutputTimestamp
+	const runBtn = document.querySelector("#run");
+	const output = document.querySelector("output");
+
+	let audioCtx, source, rAF, oTime = {}, tStart, limit = 20, newlimit
+	let calc1 = new RegExp('^-?\\d+(?:\.\\d{0,' + (1 || -1) + '})?')
+
+	// Press the play button
+	runBtn.addEventListener("click", () => {
+		try {
+			newlimit = limit - 1
+			output.innerHTML = ''
+			// We can create the audioCtx as there has been some user action
+			if (!audioCtx) {audioCtx = new AudioContext()}
+			oTime = {'contextTime': [],'performanceTime': []}
+			tStart = performance.now()
+			source = new AudioBufferSourceNode(audioCtx);
+			source.start(0);
+			runBtn.disabled = true;
+			rAF = requestAnimationFrame(collectTimestamps);
+		} catch(e) {
+			output.innerHTML = e+''
+		}
+	})
+
+	function stop() {
+		let timeTaken = Math.round(performance.now() - tStart)
+		source.stop(0)
+		cancelAnimationFrame(rAF)
+		let display = []
+		for (const k of Object.keys(oTime)) {
+			let data = oTime[k], count = data.length
+			let str = ' ['+ count +' | ' + timeTaken +' ms | '+ Math.floor(timeTaken/count) +']'
+			display.push('<b>'+ k +'</b>'+ str +'<br>')
+			data = data.filter(function(item, position) {return data.indexOf(item) === position})
+			// contextTime: if the first value is 0 then we need to drop it
+				// otherwise the first diff causes an offset to our 60FPS timing as rAF catches up: e.g.
+				// 10, 26.6, 43.3, 76.6, 110, 143.3, 160, 176.6, 193.3, 210, 243.3
+				// 10, 26.6, 43.3
+				// ^ should be 0, 16.6, 33.3: i.e the [0, 10, 26.6...] we drop the start point of 0
+				// after that everythng is in sync
+			if ('contextTime' == k && 0 == data[0]) {data = data.slice(1)}
+			let setDiffs = new Set(), aTotal = [], start = data[0]
+			for (let i=1; i < data.length ; i++) {
+				let end = data[i]
+				// truncate to 1 decimal place
+				let totaldiff = ((end - start).toString().match(calc1)[0]) * 1
+				aTotal.push(totaldiff)
+				let diff = (totaldiff % 50).toFixed(2) * 1 // drop 50s
+				setDiffs.add(diff)
+			}
+			let aDiffs = Array.from(setDiffs)
+			console.log(k, 'data', data)
+			//console.log(k, 'diffs', aDiffs)
+			if (newlimit > 19) {
+				console.log(k, 'total', aTotal)
+				// just get the first 10 + last 5
+				let len = aTotal.length
+				let newTotal = aTotal.slice(0, 10)
+				let lastTotal = aTotal.slice(len - 5, len)
+				str = newTotal.join(', ') + ' ... see console for full total list ... ' + lastTotal.join(', ')
+			} else {
+				str = aTotal.join(', ')
+			}
+			display.push(str +'<br>')
+			display.push(aDiffs.join(', ') +'<br>')
+
+		}
+		output.innerHTML = display.join('<br>')
+		runBtn.disabled = false
+	}
+
+	// collect timestamps
+	function collectTimestamps() {
+		const ts = audioCtx.getOutputTimestamp();
+		oTime.contextTime.push(ts.contextTime * 1000)
+		oTime.performanceTime.push(ts.performanceTime)
+		rAF = requestAnimationFrame(collectTimestamps); // Reregister itself
+		if (newlimit > 19) {
+			output.innerHTML = oTime.contextTime.length + ' of '+ limit
+		}
+		if (oTime.contextTime.length > newlimit) {stop()}
+	}
+</script>
+
+</body>
+</html>
