@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="systemLanguage">
+	<title>svg switch</title>
+	<style>
+		.hidden {display: none;}
+		.offscreen {
+			position: absolute !important;
+			top: -2000% !important;
+			left: 0px !important;
+		}
+	</style>
+</head>
+<body>
+
+<!-- can be offscreen but not hidden -->
+<div class="offscreen"><svg id="svgswitch" width="0px" height="0px" viewBox="0 0 0 0"></svg></div>
+
+<br><div><b>perf:</b> <span id="perf"></span></div>
+<br><div><b>navigator languages:</b> [sorted, lowercase]<div id="nav"></div></div>
+<br><div><b>switch languages:</b> [sorted]<div id="result"></div></div>
+<br><div><b>match:</b><div id="match"></div></div>
+
+
+<script>
+'use strict';
+/*
+https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/systemLanguage
+
+The attribute evaluates to "true" if one of the language tags indicated by
+user preferences is a case-insensitive match or prefix (followed by a "-")
+of one of the language tags given in the value of this parameter.
+
+prefix!!!
+
+intl.accept_languages / settings UI
+- [en-US] - only returns en-us
+- [en] - only returns en
+- [] - returns locale
+
+not sure what this prefix thing means - it seems to only return exact matches (case insensitive)
+
+*/
+
+// https://developer.mozilla.org/en-US/docs/Web/SVG/Element/switch
+
+// it uses languages (navigator) and it will DISPLAY the first match
+	// e.g. 'en-US, en'
+		// if 'en' is listed before 'en-US', it still displays 'en-US'
+		// if 'en-US' is not a text option but 'en' is, it will display 'en'
+// but all detected langaages are populated
+	// SVG elements don't have an innerText property, but we can iterate all text nodes and check for a BBox
+
+let strNav = '', strNavOrdered = '', aList = []
+
+function populate() {
+	// do this once: build a list programatically
+		// always include all nav languages
+		// then add all other common languages
+		// this should be enough to detect BS
+
+	let nav = document.getElementById('nav'), aLang = []
+	let lang = navigator.languages
+	strNavOrdered = lang.join(', ')
+	lang.forEach(function(l){
+		l = l.toLowerCase()
+		aLang.push(l)
+		aList.push(l)
+	})
+	aLang.sort()
+	strNav = aLang.join(', ')
+	nav.innerHTML = strNav
+
+	// https://searchfox.org/mozilla-central/source/intl/icu/source/data/lang/en.txt#44
+	// this might be enough to catch out navigator.languages beinmg tampered with
+	let aBaseLang = [
+		'aa','ab','ace','ach','ada','ady','ae','aeb','af','afh','agq','ain','ak','akk','akz','ale','aln','alt','am',
+		'an','ang','ann','anp','ar','ar_001','arc','arn','aro','arp','arq','ars','arw','ary','arz','as','asa','ase',
+		'ast','atj','av','avk','awa','ay','az','ba','bal','ban','bar','bas','bax','bbc','bbj','be','bej','bem','bew',
+		'bez','bfd','bfq','bg','bgc','bgn','bho','bi','bik','bin','bjn','bkm','bla','blt','bm','bn','bo','bpy','bqi',
+		'br','bra','brh','brx','bs','bss','bua','bug','bum','byn','byv','ca','cad','car','cay','cch','ccp','ce','ceb',
+		'cgg','ch','chb','chg','chk','chm','chn','cho','chp','chr','chy','cic','ckb','clc','co','cop','cps','cr','crg',
+		'crh','crj','crk','crl','crm','crr','crs','cs','csb','csw','cu','cv','cwd','cy','da','dak','dar','dav','de',
+		'de_at','de_ch','del','den','dgr','din','dje','doi','dsb','dtp','dua','dum','dv','dyo','dyu','dz','dzg','ebu',
+		'ee','efi','egl','egy','eka','el','elx','en','en_au','en_ca','en_gb','en_us','enm','eo','es','es_419','es_es',
+		'es_mx','esu','et','eu','ewo','ext','fa','fa_af','fan','fat','ff','fi','fil','fit','fj','fo','fon','fr','fr_ca',
+		'fr_ch','frc','frm','fro','frp','frr','frs','fur','fy','ga','gaa','gag','gan','gay','gba','gbz','gd','gez','gil',
+		'gl','glk','gmh','gn','goh','gom','gon','gor','got','grb','grc','gsw','gu','guc','gur','guz','gv','gwi','ha',
+		'hai','hak','haw','hax','hdn','he','hi','hi_latn','hif','hil','hit','hmn','hnj','ho','hr','hsb','hsn','ht','hu',
+		'hup','hur','hy','hz','ia','iba','ibb','id','ie','ig','ii','ik','ike','ikt','ilo','inh','io','is','it','iu','izh',
+		'ja','jam','jbo','jgo','jmc','jpr','jrb','jut','jv','ka','kaa','kab','kac','kaj','kam','kaw','kbd','kbl','kcg',
+		'kde','kea','ken','kfo','kg','kgp','kha','kho','khq','khw','ki','kiu','kj','kk','kkj','kl','kln','km','kmb','kn',
+		'ko','koi','kok','kos','kpe','kr','krc','kri','krj','krl','kru','ks','ksb','ksf','ksh','ku','kum','kut','kv',
+		'kw','kwk','ky','la','lad','lag','lah','lam','lb','lez','lfn','lg','li','lij','lil','liv','lkt','lmo','ln','lo',
+		'lol','lou','loz','lrc','lsm','lt','ltg','lu','lua','lui','lun','luo','lus','luy','lv','lzh','lzz','mad','maf',
+		'mag','mai','mak','man','mas','mde','mdf','mdr','men','mer','mfe','mg','mga','mgh','mgo','mh','mi','mic','min',
+		'mk','ml','mn','mnc','mni','moe','moh','mos','mr','mrj','ms','mt','mua','mul','mus','mwl','mwr','mwv','my','mye',
+		'myv','mzn','na','nan','nap','naq','nb','nd','nds','nds_nl','ne','new','ng','nia','niu','njo','nl','nl_be','nmg',
+		'nn','nnh','no','nog','non','nov','nqo','nr','nso','nus','nv','nwc','ny','nym','nyn','nyo','nzi','oc','oj','ojb',
+		'ojc','ojg','ojs','ojw','oka','om','or','os','osa','ota','pa','pag','pal','pam','pap','pau','pcd','pcm','pdc',
+		'pdt','peo','pfl','phn','pi','pis','pl','pms','pnt','pon','pqm','prg','pro','ps','pt','pt_br','pt_pt','qu','quc',
+		'qug','raj','rap','rar','rgn','rhg','rif','rm','rn','ro','ro_md','rof','rom','rtm','ru','rue','rug','rup','rw',
+		'rwk','sa','sad','sah','sam','saq','sas','sat','saz','sba','sbp','sc','scn','sco','sd','sdc','sdh','se','see',
+		'seh','sei','sel','ses','sg','sga','sgs','sh','shi','shn','shu','si','sid','sk','sl','slh','sli','sly','sm',
+		'sma','smj','smn','sms','sn','snk','so','sog','sq','sr','sr_me','srn','srr','ss','ssy','st','stq','str','su',
+		'suk','sus','sux','sv','sw','sw_cd','swb','syc','syr','szl','ta','tce','tcy','te','tem','teo','ter','tet','tg',
+		'tgx','th','tht','ti','tig','tiv','tk','tkl','tkr','tl','tlh','tli','tly','tmh','tn','to','tog','tok','tpi','tr',
+		'tru','trv','trw','ts','tsd','tsi','tt','ttm','ttt','tum','tvl','tw','twq','ty','tyv','tzm','udm','ug','uga','uk',
+		'umb','und','ur','uz','vai','ve','vec','vep','vi','vls','vmf','vo','vot','vro','vun','wa','wae','wal','war','was',
+		'wbp','wo','wuu','xal','xh','xmf','xog','yao','yap','yav','ybb','yi','yo','yrl','yue','za','zap','zbl','zea','zen',
+		'zgh','zh','zh_hans','zh_hant','zu','zun','zxx','zza'
+	]
+	aList = aList.concat(aBaseLang)
+	// dedupe aList
+	aList = aList.filter(function(item, position) {return aList.indexOf(item) === position})
+	aList.sort()
+	//console.log(aList.length)
+
+	try {
+		let target = document.getElementById('svgswitch')
+		let str = '', aText = ['<switch id="switch">']
+		aList.forEach(function(l){
+			aText.push('<text systemLanguage="'+ l +'">' + l +'</text>')
+		})
+		aText.push('<text>unknown</text></switch>')
+		target.innerHTML = aText.join('')
+	} catch(e) {
+		console.log(e)
+	}
+}
+
+function run() {
+
+	let start = performance.now()
+	let output = document.getElementById('result'),
+		perf = document.getElementById('perf'),
+		match = document.getElementById('match')
+	// reset
+	output.innerHTML = ''
+	perf.innerHTML = ''
+	match.innerHTML = ''
+
+	let strSwitch = ''
+	let target = document.getElementById('switch')
+	try {
+		// this returns the info in the order of the svg switch text items
+			// and always includes 'unknown'
+		let aDetected = [], range = new Range()
+
+		const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, null);
+		while(walker.nextNode() && walker.currentNode) {
+			range.selectNode(walker.currentNode)
+			if (range.getClientRects().length) {aDetected.push(walker.currentNode.textContent)}
+		}
+
+		if (aDetected.length > 1) {
+			aDetected = aDetected.filter(x => !['unknown'].includes(x))
+			//aDetected.sort() // we sorted aList
+		}
+		let end = performance.now()
+		perf.innerHTML = Math.round(end - start) +'ms'
+		strSwitch = aDetected.join(', ')
+	} catch(e) {
+		strSwitch = e+''
+	}
+	result.innerHTML = strSwitch
+	let isMatch = strSwitch == strNav
+	match.innerHTML = isMatch
+
+}
+
+
+
+populate()
+run()
+
+</script>
+</body>
+</html>
