@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=500">
+<title>connection</title>
+<style>
+body {background-color: white; color: black;}
+.mono {font-family: monospace, "Courier New";}
+.spaces {white-space: pre-wrap;}
+</style>
+</head>
+
+<br><button type="button" onclick="run('lock')">lock</button> <button type="button" onclick="run('unlock')">unlock</button><br><br>
+<div id="output" class="mono spaces"></div>
+<body>
+
+<script>
+'use strict';
+
+function json_stringify(passedObj, options = {}) {
+	/* https://github.com/lydell/json-stringify-pretty-compact */
+	const stringOrChar = /("(?:[^\\"]|\\.)*")|[:,]/g;
+	const indent = JSON.stringify(
+		[1],
+		undefined,
+		options.indent === undefined ? 2 : options.indent
+	).slice(2, -3);
+	const maxLength =
+		indent === ''
+			? Infinity
+			: options.maxLength === undefined
+			? 95
+			: options.maxLength;
+	let { replacer } = options;
+
+	return (function _stringify(obj, currentIndent, reserved) {
+		if (obj && 'function' === typeof obj.toJSON) {
+			obj = obj.toJSON()
+		}
+		const string = JSON.stringify(obj, replacer);
+		if (string === undefined) {
+			return string
+		}
+		const length = maxLength - currentIndent.length - reserved;
+		if (string.length <= length) {
+			const prettified = string.replace(
+				stringOrChar,
+				(match, stringLiteral) => {
+					return stringLiteral || `${match} `;
+				}
+			);
+			if (prettified.length <= length) {
+				return prettified;
+			}
+		}
+		if (replacer != null) {
+			obj = JSON.parse(string);
+			replacer = undefined;
+		}
+		if ('object' == typeof obj && obj !== null) {
+			const nextIndent = currentIndent + indent;
+			const items = [];
+			let index = 0;
+			let start;
+			let end;
+			if (Array.isArray(obj)) {
+				start = '[';
+				end = ']';
+				const { length } = obj;
+				for (; index < length; index++) {
+					items.push(
+						_stringify(obj[index], nextIndent, index === length - 1 ? 0 : 1) ||
+						'null'
+					);
+				}
+			} else {
+				start = '{';
+				end = '}';
+				const keys = Object.keys(obj);
+				const { length } = keys;
+				for (; index < length; index++) {
+					const key = keys[index];
+					const keyPart = `${JSON.stringify(key)}: `;
+					const value = _stringify(
+						obj[key],
+						nextIndent,
+						keyPart.length + (index === length - 1 ? 0 : 1)
+					);
+					if (value !== undefined) {
+						items.push(keyPart + value);
+					}
+				}
+			}
+			if (items.length > 0) {
+				return [start, indent + items.join(`,\n${nextIndent}`), end].join(
+				`\n${currentIndent}`
+				);
+			}
+		}
+	return string;
+	})(passedObj, '', 0);
+}
+
+function run(type) {
+	let target = document.getElementById('output')
+	let aAll = ['portrait-primary','portrait-secondary','landscape-primary','landscape-secondary','portrait','landscape','default']
+	aAll.sort()
+
+	let oData = {}
+	// array
+	try {
+		let test
+		if ('lock' == type) {test = screen.mozLockOrientation(aAll)
+		} else {test = screen.mozUnlockOrientation(aAll)
+		}
+		oData['all'] = test +''
+	} catch(e) {
+		oData['all'] = e+''
+	}
+	// individual
+	aAll.forEach(function(item){
+		try {
+			let test
+			if ('lock' == type) {test = screen.mozLockOrientation(item)
+			} else {test = screen.mozUnlockOrientation(item)
+			}
+			oData[item] = test +''
+		} catch(e) {
+			oData[item] = e+''
+		}
+	})
+
+	target.innerHTML = type.toUpperCase() +'<br><br>'+ json_stringify(oData)
+
+}
+
+</script>
+</body>
+</html>
