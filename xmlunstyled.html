@@ -1,17 +1,13 @@
 <!DOCTYPE html>
-<!--<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">-->
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>xml unstyled</title>
 </head>
 
 <body>
-<div>results: <span id='results'><span></div><br>
-<iframe id='test' width='40px' height='600px'></iframe>
-<iframe id='visual' height='600px'></iframe>
-
-<!--<iframe id='message1' height='600px' src='xmlunstyled.xml'></iframe>-->
-<!--<iframe id='message2' height='600px' src='data:text/xml;<?xml version="1.0" encoding="UTF-8"?><a>a</a>'></iframe>-->
+<div><button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></div><br>
+<iframe id='test' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
+<iframe id='visual' height='600px' src='xmlunstyled.xml'></iframe>
 
 <script>
 'use strict';
@@ -20,40 +16,29 @@
 let target = document.getElementById('test'),
 	visual = document.getElementById('visual')
 
-target.src = 'xmlunstyled.xml'
-visual.src = 'xmlunstyled.xml'
 console.log('TARGET\n======')
 console.log(target)
 console.log(target.contentDocument)
 
-let testheight, visualheight
-try {
-	testheight = target.contentDocument.firstChild.getBoundingClientRect().height
-} catch(e) {
-	console.log('testheight',e)
-	testheight = 'error'
-}
+// we need to wait for the xml file to load
+	// just stick it behind a button for now
+function measure() {
+	let testheight, visualheight
+	try {
+		testheight = target.contentDocument.firstChild.getBoundingClientRect().height
+	} catch(e) {
+		console.log('testheight',e)
+		testheight = 'error'
+	}
 
-try {
-	visualheight = visual.contentDocument.firstChild.getBoundingClientRect().height
-} catch(e) {
-	console.log('visualheight',e)
-	visualheight = 'error'
+	try {
+		visualheight = visual.contentDocument.firstChild.getBoundingClientRect().height
+	} catch(e) {
+		console.log('visualheight',e)
+		visualheight = 'error'
+	}
+	document.getElementById('results').innerHTML = 'test: '+ testheight +' | visual: '+ visualheight
 }
-document.getElementById('results').innerHTML = 'test: '+ testheight +' | visual: '+ visualheight
-
-/*
-let parsertarget
-try {
-	let parser = new DOMParser
-	let doc = parser.parseFromString('<?xml version="1.0" encoding="UTF-8"?><a>a</a>', "text/xml")
-	console.log(doc)
-	parsertarget = doc.firstChild
-} catch(e) {
-	console.log(e)
-}
-console.log(parsertarget)
-*/
 
 </script>
 </body>
