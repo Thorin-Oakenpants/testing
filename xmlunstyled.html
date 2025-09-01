@@ -6,7 +6,7 @@
 
 <body>
 <p id='info'></p>
-<p>xslt: <span id='xslterror'></span></p>
+<p>xslt: <span id='xslterror'></span> &nbsp; <span id='xslthash'></span></p>
 <p><button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></p>
 <iframe id='test' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
 <iframe id='visual' width='300px' height='600px' src='xmlunstyled.xml'></iframe>
@@ -55,7 +55,7 @@ console.log(target.contentDocument)
 // we need to wait for the xml file to load
 	// just stick it behind a button for now
 function measure() {
-	let testheight, visualheight, xsltresult
+	let testheight, visualheight, xsltresult, xslthash =''
 	try {
 		testheight = target.contentDocument.firstChild.getBoundingClientRect().height
 	} catch(e) {
@@ -72,14 +72,15 @@ function measure() {
 	document.getElementById('results').innerHTML = 'test: '+ testheight +' | visual: '+ visualheight
 
 	// get xslt style error
+
 	try {
 		xsltresult = xslt.contentDocument.children[0].textContent
-		let hash = mini(xsltresult)
-		xsltresult += ' | ' + hash
+		xslthash = mini(xsltresult)
 	} catch(e) {
 		xsltresult = e
 	}
 	document.getElementById('xslterror').innerHTML = xsltresult
+	document.getElementById('xslthash').innerHTML = xslthash
 }
 </script>
 </body>
