@@ -6,7 +6,7 @@
 
 <body>
 <p id='info'></p>
-<p>xslt: <span id='xslterror'></span> &nbsp; <span id='xslthash'></span></p>
+<p>xslt: <span id='xslterror'></span> &nbsp; <bdo dir='ltr'><span id='xslthash'></span></bdo></p>
 <p><button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></p>
 <iframe id='test' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
 <iframe id='visual' width='300px' height='600px' src='xmlunstyled.xml'></iframe>
@@ -72,7 +72,6 @@ function measure() {
 	document.getElementById('results').innerHTML = 'test: '+ testheight +' | visual: '+ visualheight
 
 	// get xslt style error
-
 	try {
 		xsltresult = xslt.contentDocument.children[0].textContent
 		xslthash = mini(xsltresult)
