@@ -5,8 +5,8 @@
 </head>
 
 <body>
-<div>locale: <span id='locale'></span> | 
-<button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></div><br>
+<p id='info'></p>
+<p><button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></p>
 <iframe id='test' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
 <iframe id='visual' height='600px' src='xmlunstyled.xml'></iframe>
 </div>
@@ -14,6 +14,21 @@
 <script>
 'use strict';
 // https://searchfox.org/firefox-main/source/dom/locales/en-US/dom = XMLPrettyPrint
+
+let isLocale, isLanguage
+try {
+	isLocale = Intl.DateTimeFormat().resolvedOptions().locale
+} catch(e) {
+	isLocale = 'error'
+	console.log(e)
+}
+try {
+	isLanguage = navigator.language
+} catch(e) {
+	isLanguage = 'error'
+	console.log(e)
+}
+document.getElementById('info').innerHTML = 'language: '+ isLanguage +' | locale: '+ isLocale
 
 let target = document.getElementById('test'),
 	visual = document.getElementById('visual')
@@ -41,18 +56,6 @@ function measure() {
 	}
 	document.getElementById('results').innerHTML = 'test: '+ testheight +' | visual: '+ visualheight
 }
-
-function get_locale() {
-	let isLocale = ''
-	try {
-		isLocale = Intl.DateTimeFormat().resolvedOptions().locale
-	} catch(e) {
-		// leave undefined
-	}
-	document.getElementById('locale').innerHTML = isLocale
-}
-get_locale()
-
 </script>
 </body>
 </html>
