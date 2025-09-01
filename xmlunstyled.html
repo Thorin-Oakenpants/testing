@@ -6,32 +6,47 @@
 
 <body>
 <p id='info'></p>
+<p>xslt: <span id='xslterror'></span></p>
 <p><button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></p>
 <iframe id='test' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
-<iframe id='visual' height='600px' src='xmlunstyled.xml'></iframe>
+<iframe id='visual' width='300px' height='600px' src='xmlunstyled.xml'></iframe>
+<iframe id='xslt' width='300px' height='600px' src='xslterror1.xml'></iframe>
 </div>
+
 
 <script>
 'use strict';
 // https://searchfox.org/firefox-main/source/dom/locales/en-US/dom = XMLPrettyPrint
 
-let isLocale, isLanguage
-try {
-	isLocale = Intl.DateTimeFormat().resolvedOptions().locale
-} catch(e) {
-	isLocale = 'error'
-	console.log(e)
+function mini(str) {
+	// https://stackoverflow.com/a/22429679
+	const json = `${JSON.stringify(str)}`
+	let len = json.length, hash = 0x811c9dc5
+	for (let i=0; i < len; i++) {
+		hash = Math.imul(31, hash) + json.charCodeAt(i) | 0
+	}
+	return ('0000000' + (hash >>> 0).toString(16)).slice(-8)
 }
-try {
-	isLanguage = navigator.language
-} catch(e) {
-	isLanguage = 'error'
-	console.log(e)
+
+function set_info() {
+	let isLocale, isLanguage
+	try {
+		isLocale = Intl.DateTimeFormat().resolvedOptions().locale
+	} catch(e) {
+		isLocale = 'error'; console.log(e)
+	}
+	try {
+		isLanguage = navigator.language
+	} catch(e) {
+		isLanguage = 'error'; console.log(e)
+	}
+	document.getElementById('info').innerHTML = 'language: '+ isLanguage +' | locale: '+ isLocale
 }
-document.getElementById('info').innerHTML = 'language: '+ isLanguage +' | locale: '+ isLocale
+set_info()
 
 let target = document.getElementById('test'),
-	visual = document.getElementById('visual')
+	visual = document.getElementById('visual'),
+	xslt = document.getElementById('xslt')
 
 console.log('TARGET\n======')
 console.log(target)
@@ -40,7 +55,7 @@ console.log(target.contentDocument)
 // we need to wait for the xml file to load
 	// just stick it behind a button for now
 function measure() {
-	let testheight, visualheight
+	let testheight, visualheight, xsltresult
 	try {
 		testheight = target.contentDocument.firstChild.getBoundingClientRect().height
 	} catch(e) {
@@ -55,6 +70,16 @@ function measure() {
 		visualheight = 'error'
 	}
 	document.getElementById('results').innerHTML = 'test: '+ testheight +' | visual: '+ visualheight
+
+	// get xslt style error
+	try {
+		xsltresult = xslt.contentDocument.children[0].textContent
+		let hash = mini(xsltresult)
+		xsltresult += ' | ' + hash
+	} catch(e) {
+		xsltresult = e
+	}
+	document.getElementById('xslterror').innerHTML = xsltresult
 }
 </script>
 </body>
