@@ -9,13 +9,13 @@
 <p>xslt: <span id='xslterror'></span> &nbsp; <bdo dir='ltr'><span id='xslthash'></span></bdo></p>
 <p><button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></p>
 
-<!-- tzp uses 40px x 30px: height can change measurements
-	so for stability we squeeze all translations into a size that is too small
+<!-- we need to force a really narrow width as some scripts have narrow single char words
+- and in order to see the numbmer of lines (scrollbars get in the way), we will use a large height
 -->
-<iframe id='test' width='40px' height='30px' src='xmlunstyled.xml'></iframe><br>
-<iframe id='view' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
-<iframe id='visual' width='200px' height='600px' src='xmlunstyled.xml'></iframe>
-<iframe id='xslt' width='200px' height='600px' src='xslterror1.xml'></iframe>
+<iframe id='test' width='20px' height='30px' src='xmlunstyled.xml'></iframe><br>
+<iframe id='view' width='20px' height='1500px' src='xmlunstyled.xml'></iframe>
+<iframe id='visual' width='200px' height='1500px' src='xmlunstyled.xml'></iframe>
+<iframe id='xslt' width='200px' height='1500px' src='xslterror1.xml'></iframe>
 </div>
 
 
