@@ -8,9 +8,14 @@
 <p id='info'></p>
 <p>xslt: <span id='xslterror'></span> &nbsp; <bdo dir='ltr'><span id='xslthash'></span></bdo></p>
 <p><button type="button" onclick="measure()">measure</button> &nbsp; <span id='results'><span></p>
-<iframe id='test' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
-<iframe id='visual' width='300px' height='600px' src='xmlunstyled.xml'></iframe>
-<iframe id='xslt' width='300px' height='600px' src='xslterror1.xml'></iframe>
+
+<!-- tzp uses 40px x 30px: height can change measurements
+	so for stability we squeeze all translations into a size that is too small
+-->
+<iframe id='test' width='40px' height='30px' src='xmlunstyled.xml'></iframe><br>
+<iframe id='view' width='40px' height='600px' src='xmlunstyled.xml'></iframe>
+<iframe id='visual' width='200px' height='600px' src='xmlunstyled.xml'></iframe>
+<iframe id='xslt' width='200px' height='600px' src='xslterror1.xml'></iframe>
 </div>
 
 
@@ -45,17 +50,14 @@ function set_info() {
 set_info()
 
 let target = document.getElementById('test'),
+	view = document.getElementById('view'),
 	visual = document.getElementById('visual'),
 	xslt = document.getElementById('xslt')
-
-console.log('TARGET\n======')
-console.log(target)
-console.log(target.contentDocument)
 
 // we need to wait for the xml file to load
 	// just stick it behind a button for now
 function measure() {
-	let testheight, visualheight, xsltresult, xslthash =''
+	let testheight, viewheight, visualheight, xsltresult, xslthash =''
 	try {
 		testheight = target.contentDocument.firstChild.getBoundingClientRect().height
 	} catch(e) {
@@ -64,12 +66,20 @@ function measure() {
 	}
 
 	try {
+		viewheight = view.contentDocument.firstChild.getBoundingClientRect().height
+	} catch(e) {
+		console.log('viewheight',e)
+		viewheight = 'error'
+	}
+
+	try {
 		visualheight = visual.contentDocument.firstChild.getBoundingClientRect().height
 	} catch(e) {
 		console.log('visualheight',e)
 		visualheight = 'error'
 	}
-	document.getElementById('results').innerHTML = 'test: '+ testheight +' | visual: '+ visualheight
+	document.getElementById('results').innerHTML = 'short: '+ testheight
+		+' | tall: '+ viewheight +' | visual: '+ visualheight
 
 	// get xslt style error
 	try {
