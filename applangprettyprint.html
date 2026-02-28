@@ -36,8 +36,8 @@
 		<li>There are three test columns
 			<ul>
 				<li>translation: for a direct comparison</li>
-				<li>single: some languages require script glyphs (see <code>measure(true, ['zh-TW'])</code>)</li>
-				<li>latin: this was to see if could use the same word everywhere - nope, see <code>measure(true, ['zh-TW'])</code></li>
+				<li>single: some languages may require script glyphs: ee <code>measure(true, ['my'])</code></li>
+				<li>latin: testing to see if we can simplfy all languages to use the same word
 			</ul>
 		</li>
 		<li>each test
@@ -366,11 +366,13 @@ function measure(isLoop = false, aList) {
 		'lines': lines.parentNode.parentNode,
 		'latin': latin.parentNode.parentNode,
 	}
+	let heightSet = new Set()
 	aList.forEach(function(lang){
 		set_attributes(lang)
 		if (undefined !== data) {
 			for (const t of Object.keys(oTarget)) {
 				let height = oTarget[t].getBoundingClientRect().height
+				heightSet.add(height)
 				let info = '', match = ''
 				if ('lines' == t) {
 					document.getElementById('info').innerHTML = 'language: '+ lang + (isLoop ? ' [simulated]' : '')
@@ -380,21 +382,27 @@ function measure(isLoop = false, aList) {
 					if (!xmlError) {
 						let realdiff = height - xmlH
 						// allow for some system scaling: not sure if I've exactly replicated the code/css
-						// sometimes we can be out by a TINY bit (0.00003...) but given overall minimal
-						// diffs are 2 or 3 pixels (in TB15 at 100% zoom, not sure about 144+ with monospace)
-						// we can allow some wriggle room - let's try ± 0.25
+						// sometimes we can be out by a TINY bit (0.00006... is the highest so far) but given overall
+						// minimal diffs (steps between entropy buckets in numerical order) are 2 or 3 pixels (in TB15
+						// at 100% zoom, not sure about 144+ with monospace) we can allow some wriggle room - let's try ± 0.25
 						let isMatch = (Math.abs(height - xmlH) < 0.25)
-						match = (isMatch ? sg +' [' + green_tick : sb +' ['+ red_cross)+' match xml'
-						if (!isLoop && realdiff !== 0) {match += ' | diff: ' + realdiff}
-						match += ']'+ sc
+						match = ''
+						if (!isLoop) {
+							match = (isMatch ? sg +' [' + green_tick : sb +' ['+ red_cross)+' match xml'
+							if (realdiff !== 0) {match += ' | diff: ' + realdiff}
+							match += ']'+ sc
+						}
 					}
 					info = ' [expected: ' + data[0] + ' | diff: ' + diff +' | font-family: ' + style +']'
 				}
-				document.getElementById(t + 'result').innerHTML = height + match //+ info
+				let sizes =''
+				if ('latin' == t) {sizes = (1 == heightSet.size ? sg +' ['+ green_tick : sb +' ['+ red_cross) + ' test sizes match each other]'+ sc}
+				document.getElementById(t + 'result').innerHTML = height + match + sizes//+ info
 			}
 		}
 	})
-	if (isLoop) {console.log(oData)}
+	
+	//if (isLoop) {console.log(oData)}
 }
 
 
