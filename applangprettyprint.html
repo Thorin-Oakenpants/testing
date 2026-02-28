@@ -3,19 +3,12 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>app language: prettyprint </title>
 	<style>
-		:root{
-			--test7: #9ddc9d;
-			--testbad: #ff8787;
-		}
 		.mono {font-family: monospace}
 		.sans {font-family: sans-serif}
 		.serif {font-family: serif}
 		code {background: rgba(142, 142, 145, 0.25)}
-
-		.good {color: var(--test7);}
-		.bad {color: var(--testbad);}
-
-
+		.good {color: green;}
+		.bad {color: red;}
 		.spaces {white-space: pre-wrap;}
 		td.top {vertical-align: top;}
 
@@ -117,6 +110,15 @@
 
 <script>
 'use strict';
+// css
+let s0 = "<span class='",
+	sb = s0+"bad'>",
+	sg = s0+"good'>",
+	sc = "</span>",
+	green_tick = "<span style='font-size: 10px;'><b>" + sg.trim() +" \u2713"+ sc + "</b></span>",
+	red_cross = "<span style='font-size: 10px;'><b>" + sb.trim() +" \u2715"+ sc + "</b></span>"
+
+// gecko version
 let is144 = false
 try {
 	let list = [
