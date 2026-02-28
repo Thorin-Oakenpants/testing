@@ -24,7 +24,6 @@
 		.xmlcontent {
 			padding: 1em;
 		}
-
 	</style>
 </head>
 
@@ -46,15 +45,6 @@
 				<li>sets <code>font-family</code> attribute</li>
 			</ul>
 		</li>
-		<!--
-		<li>you can run <code>measure(true, codes)</code>
-			<ul>
-				<li><code>codes</code>: an optional array of Base Browser supported languages e.g <code>measure(true, ['ja'])</code>
-				<li>This will output to console a list of differences from expected results</li>
-				<li>Note that the expected results are from	<b>windows 11</b> with <br> a <code>devicePixelRatio</code> of <code>1</code> and at <code>100%</code> zoom.</li>
-			</ul>
-		</li>
-		-->
 		<li>links
 			<ul>
 				<li><a target="_blank "href="https://searchfox.org/firefox-main/source/dom/xml/resources/XMLPrettyPrint.xsl">
@@ -130,7 +120,6 @@ let translationbottom = document.getElementById('translationbottom'),
 	latinbottom = document.getElementById('latinbottom')
 
 let aLoop = [], oData = {}, aNum, aSteps = []
-let hasRun = false
 
 // gecko version
 let is144 = false
@@ -186,38 +175,9 @@ chrome://global/content/xml/XMLPrettyPrint.css
 let oTest = {
 	// note rtl results may vary in order due to mixed directional copypasta
 	// we can use 'XML' + word x (number of lines - 1) instead of the translation
-	// key: [height, lines, style, word, str]
-	// height is TB15 windows 11 zoom 100% DPR 1 (for dev testing) to see if we can match it
 
 	// test widths are at width 20 to maximize number of lines
 	// both short and tall match which gives us stability
-
-	// 20 unique heights
-	// height steps most are double digits but the main one is en-US since we force a reload
-	// when lang changing and the only one that can be different is spoof english
-	// but note: live lang load could cause any mix
-	/*
-	283:		
-	301:	18
-	319:	18
-	355:	36
-	373:	18
-	376:	 3
-	391:	15
-	​427:	36 <-- en-US
-	​445:	18
-	​455:	10
-	​463:	 8
-	​481:	18
-	​483:	 2
-​	553:	70
-​	565:	12
-​	607:	42
-​	625:	18
-​	901:	276
-​	967:	66
-​	1321:	354
-	*/
 
 	// the key is can we simulate an accurate measurement e.g. ±1
 	// and persist that accuracy at any DRP/zoom etc
@@ -236,48 +196,54 @@ also seems as if those langs also don't use mono when spoofing english - tested 
 
 */
 
-	   'ar': [376, 13, 'ss', 'ليبدو', "يبدو أنّه ليس لملفّ XML معلومات طُرِز ترتبط به. شجرة المستند معروضة بأسفل"],
-	   'be': [391, 16, 's', 'tzp', "Гэты файл XML не мае ніякіх звестак аб стылі, спалучаных з ім. Дрэва дакумента паказана ніжэй."],
-	   'bg': [373, 15, 's', 'tzp', "Този XML файл изглежда няма прикачена стилова информация. Дървото на документа е показано по-долу."],
-	   'ca': [463, 20, 's', 'tzp', "Aquest fitxer XML no sembla que tingui cap informació d'estil associada. Es visualitza a sota l'esquema en arbre del document."],
-	   'cs': [391, 16, 's', 'tzp', "Tento XML soubor nemá připojeny žádné informace o vzhledu prvků. Strom XML dokumentu je zobrazen níže."],
-	   'da': [283, 10, 's', 'tzp', "Denne XML-fil har ingen stilinformation tilknyttet. Dokumenttræet vises herunder."],
-	   'de': [427, 18, 's', 'tzp', "Mit dieser XML-Datei sind anscheinend keine Style-Informationen verknüpft. Nachfolgend wird die Baum-Ansicht des Dokuments angezeigt."],
-	'el-GR': [391, 16, 's', 'tzp', "Αυτό το αρχείο XML δεν φαίνεται να έχει συσχετισμένες πληροφορίες στυλ. Το δένδρο εγγράφου εμφανίζεται παρακάτω."],
-	'en-US': [463, 20, 's', 'tzp', "This XML file does not appear to have any style information associated with it. The document tree is shown below."],
-	'es-ES': [427, 18, 's', 'tzp', "Este fichero XML no parece tener ninguna información de estilo asociada. Se muestra debajo el árbol del documento."],
-	'fa-IR': [565, 22, 'ss', 'تتت', "اطلاعات XML به نظر می‌رسد که این پروندهٔ نمایش ندارد. درخت این در مورد سبک نوشتار در زیر نمایش داده شده است."],
-	'fi-FI': [391, 16, 's', 'tzp', "Tämän XML-dokumentin mukana ei näytä olevan mitään tyyli- tai muotoilutietoa. Dokumentin hierarkia-puu on alla."],
-	   'fr': [427, 18, 's', 'tzp', "Aucune information de style ne semble associée à ce fichier XML. L’arbre du document est affiché ci-dessous."],
-	'ga-IE': [445, 19, 's', 'tzp', "Is cosúil nach mbaineann aon fhaisnéis stíle leis an gcomhad XML seo. Tá an crann cáipéise le feiceáil thíos."],
-	   'he': [355, 14, 's', 'קובץ', "מידע על סגנון נראה שלקובץ XML זה אין המשויך אליו. עץ המסמך מוצג להלן"],
-	'hu-HU': [319, 12, 's', 'tzp', "Ehhez az XML-fájlhoz nem tartozik stíluslap-információ. A dokumentumfa az alábbi."],
-	   'id': [373, 15, 's', 'tzp', "Tampaknya berkas XML berikut tidak menginformasikan gaya yang diinginkan. Pohon dokumen ditampilkan di bawah ini."],
-	   'is': [445, 19, 's', 'tzp', "Þessi XML skrá virðist ekki vera með neinar upplýsingar um stílsnið. Tré fyrir skjalið er sýnt hér fyrir neðan."],
-	'it-IT': [463, 20, 's', 'tzp', "Sembra che il file XML specificato non abbia un foglio di stile associato. L’albero del documento è visualizzato di seguito."],
-     'ja': [967, 45, 's', '示',   "この XML ファイルにはスタイル情報が関連付けられていないようです。以下にドキュメントツリーを表示します。"],
-	'ka-GE': [455, 16, 's', 'მჩნ', "ეს XML-ფაილი, როგორც ჩანს, არ შეიცავს მასთან დაკავშირებული სტილის რამე მონაცემებს. დოკუმენტის სქემა ქვემოთაა მოყვანილი."],
-	'ko-KR': [901, 38, 'ss', '이', "이 XML 파일은 관련된 스타일 정보를 가지고 있지 않은 것 같습니다. 문서 트리는 아래와 같습니다."],
-	   'lt': [319, 12, 's', 'tzp', "XML failas neturi susietos su juo stilių informacijos. Dokumento medis parodytas žemiau."],
-	'mk-MK': [481, 21, 's', 'tzp', "Се чини дека оваа XML датотека нема информации за стилот кои се однесуваат на неа. Стеблото на документот е прикажано подолу."],
-	   'ms': [373, 15, 's', 'tzp', "Fail XML tidak ada sebarang maklumat gaya yang dikaitkan dengannya. Pepohon dokumen ditunjukkan di bawah."],
-	   'my': [1321, 31, 's', 'ဆက်', "XML ဖိုင်မှာ ၄င်းနဲ့ သက်ဆိုင်တဲ့ အချက်အလက် ပုံစံတခုခု ရှိပုံမပေါ်ဘူး။ အချက်အလက် ဆင်းသက်မှုကို အောက်မှာ ဖေါ်ပြထားတယ်။"],
-	'nb-NO': [301, 11, 's', 'tzp', "Denne XML-filen har ingen vedlagt stilinformasjon. Rent dokumenttre vises under."],
-	   'nl': [355, 14, 's', 'tzp', "Dit XML-bestand lijkt geen geassocieerde stijlinformatie te hebben. De documentstructuur is hieronder weergegeven."],
-	   'pl': [373, 15, 's', 'tzp', "Podany plik XML nie zawiera żadnych informacji o stylach z nim związanych. Poniżej wyświetlone jest drzewo dokumentu."],
-	'pt-BR': [463, 20, 's', 'tzp', "Este arquivo XML não parece ter qualquer informação de estilo associado a ele. A estrutura do documento é mostrada abaixo."],
-	'pt-PT': [481, 21, 's', 'tzp', "Este ficheiro XML não parece ter qualquer tipo de informação de estilo associada. A árvore do documento é mostrada em baixo."],
-	'ro-RO': [445, 19, 's', 'tzp', "Acest fișier XML nu pare să aibă vreo informație de stil asociată lui. Mai jos este afișat arborele documentului."],
-	'ru-RU': [355, 14, 's', 'tzp', "С этим XML-файлом не связана ни одна таблица стилей. Ниже показано дерево элементов."],
-	   'sq': [445, 19, 's', 'tzp', "Kjo kartelë XML nuk duket se ka ndonjë të dhënë stili përshoqëruar asaj. Pema e dokumentit tregohet më poshtë."],
-	'sv-SE': [319, 12, 's', 'tzp', "Denna XML-fil verkar inte ha någon associerad stilinformation. Dokumentträdet visas nedan."],
-	   'th': [483, 20, 's', 'ไฟล์', "ไฟล์ XML นี้ ดูเหมือนจะไม่มีข้อมูลสไตล์ใด ๆ ที่เกี่ยวข้องกัน ต้นไม้เอกสารถูกแสดงด้านล่าง "],
+
+	// key: [ [heightTB15, heightTB 144+], lines, style, word, str]
+	// height is windows 11 zoom 100% DPR 1 (for dev testing) to see if we can match it
+ 
+	   'ar': [[376, 364], 13, 'ss', 'ليبدو', "يبدو أنّه ليس لملفّ XML معلومات طُرِز ترتبط به. شجرة المستند معروضة بأسفل"],
+	   'be': [[391, 325], 16, 's', 'tzp', "Гэты файл XML не мае ніякіх звестак аб стылі, спалучаных з ім. Дрэва дакумента паказана ніжэй."],
+	   'bg': [[373, 310], 15, 's', 'tzp', "Този XML файл изглежда няма прикачена стилова информация. Дървото на документа е показано по-долу."],
+	   'ca': [[463, 385], 20, 's', 'tzp', "Aquest fitxer XML no sembla que tingui cap informació d'estil associada. Es visualitza a sota l'esquema en arbre del document."],
+	   'cs': [[391, 325], 16, 's', 'tzp', "Tento XML soubor nemá připojeny žádné informace o vzhledu prvků. Strom XML dokumentu je zobrazen níže."],
+	   'da': [[283, 235], 10, 's', 'tzp', "Denne XML-fil har ingen stilinformation tilknyttet. Dokumenttræet vises herunder."],
+	   'de': [[427, 355], 18, 's', 'tzp', "Mit dieser XML-Datei sind anscheinend keine Style-Informationen verknüpft. Nachfolgend wird die Baum-Ansicht des Dokuments angezeigt."],
+	'el-GR': [[391, 325], 16, 's', 'tzp', "Αυτό το αρχείο XML δεν φαίνεται να έχει συσχετισμένες πληροφορίες στυλ. Το δένδρο εγγράφου εμφανίζεται παρακάτω."],
+	'en-US': [[463, 385], 20, 's', 'tzp', "This XML file does not appear to have any style information associated with it. The document tree is shown below."],
+	'es-ES': [[427, 355], 18, 's', 'tzp', "Este fichero XML no parece tener ninguna información de estilo asociada. Se muestra debajo el árbol del documento."],
+	'fa-IR': [[565, 562], 22, 'ss', 'تتت', "اطلاعات XML به نظر می‌رسد که این پروندهٔ نمایش ندارد. درخت این در مورد سبک نوشتار در زیر نمایش داده شده است."],
+	'fi-FI': [[391, 325], 16, 's', 'tzp', "Tämän XML-dokumentin mukana ei näytä olevan mitään tyyli- tai muotoilutietoa. Dokumentin hierarkia-puu on alla."],
+	   'fr': [[427, 355], 18, 's', 'tzp', "Aucune information de style ne semble associée à ce fichier XML. L’arbre du document est affiché ci-dessous."],
+	'ga-IE': [[445, 370], 19, 's', 'tzp', "Is cosúil nach mbaineann aon fhaisnéis stíle leis an gcomhad XML seo. Tá an crann cáipéise le feiceáil thíos."],
+	   'he': [[355, 308], 14, 's', 'קובץ', "מידע על סגנון נראה שלקובץ XML זה אין המשויך אליו. עץ המסמך מוצג להלן"],
+	'hu-HU': [[319, 265], 12, 's', 'tzp', "Ehhez az XML-fájlhoz nem tartozik stíluslap-információ. A dokumentumfa az alábbi."],
+	   'id': [[373, 310], 15, 's', 'tzp', "Tampaknya berkas XML berikut tidak menginformasikan gaya yang diinginkan. Pohon dokumen ditampilkan di bawah ini."],
+	   'is': [[445, 370], 19, 's', 'tzp', "Þessi XML skrá virðist ekki vera með neinar upplýsingar um stílsnið. Tré fyrir skjalið er sýnt hér fyrir neðan."],
+	'it-IT': [[463, 385], 20, 's', 'tzp', "Sembra che il file XML specificato non abbia un foglio di stile associato. L’albero del documento è visualizzato di seguito."],
+     'ja': [[967, 961], 45, 's', '示',   "この XML ファイルにはスタイル情報が関連付けられていないようです。以下にドキュメントツリーを表示します。"],
+  'ja-JP': [[967, 961], 45, 's', '示',   "この XML ファイルにはスタイル情報が関連付けられていないようです。以下にドキュメントツリーを表示します。"],
+				// ^ ja-JP for macOS
+	'ka-GE': [[455, 373], 16, 's', 'მჩნ', "ეს XML-ფაილი, როგორც ჩანს, არ შეიცავს მასთან დაკავშირებული სტილის რამე მონაცემებს. დოკუმენტის სქემა ქვემოთაა მოყვანილი."],
+	'ko-KR': [[901, 892], 38, 'ss', '이', "이 XML 파일은 관련된 스타일 정보를 가지고 있지 않은 것 같습니다. 문서 트리는 아래와 같습니다."],
+	   'lt': [[319, 265], 12, 's', 'tzp', "XML failas neturi susietos su juo stilių informacijos. Dokumento medis parodytas žemiau."],
+	'mk-MK': [[481, 400], 21, 's', 'tzp', "Се чини дека оваа XML датотека нема информации за стилот кои се однесуваат на неа. Стеблото на документот е прикажано подолу."],
+	   'ms': [[373, 310], 15, 's', 'tzp', "Fail XML tidak ada sebarang maklumat gaya yang dikaitkan dengannya. Pepohon dokumen ditunjukkan di bawah."],
+	   'my': [[1321,730], 31, 's', 'ဆက်', "XML ဖိုင်မှာ ၄င်းနဲ့ သက်ဆိုင်တဲ့ အချက်အလက် ပုံစံတခုခု ရှိပုံမပေါ်ဘူး။ အချက်အလက် ဆင်းသက်မှုကို အောက်မှာ ဖေါ်ပြထားတယ်။"],
+	'nb-NO': [[301, 250], 11, 's', 'tzp', "Denne XML-filen har ingen vedlagt stilinformasjon. Rent dokumenttre vises under."],
+	   'nl': [[355, 295], 14, 's', 'tzp', "Dit XML-bestand lijkt geen geassocieerde stijlinformatie te hebben. De documentstructuur is hieronder weergegeven."],
+	   'pl': [[373, 310], 15, 's', 'tzp', "Podany plik XML nie zawiera żadnych informacji o stylach z nim związanych. Poniżej wyświetlone jest drzewo dokumentu."],
+	'pt-BR': [[463, 385], 20, 's', 'tzp', "Este arquivo XML não parece ter qualquer informação de estilo associado a ele. A estrutura do documento é mostrada abaixo."],
+	'pt-PT': [[481, 400], 21, 's', 'tzp', "Este ficheiro XML não parece ter qualquer tipo de informação de estilo associada. A árvore do documento é mostrada em baixo."],
+	'ro-RO': [[445, 370], 19, 's', 'tzp', "Acest fișier XML nu pare să aibă vreo informație de stil asociată lui. Mai jos este afișat arborele documentului."],
+	'ru-RU': [[355, 295], 14, 's', 'tzp', "С этим XML-файлом не связана ни одна таблица стилей. Ниже показано дерево элементов."],
+	   'sq': [[445, 370], 19, 's', 'tzp', "Kjo kartelë XML nuk duket se ka ndonjë të dhënë stili përshoqëruar asaj. Pema e dokumentit tregohet më poshtë."],
+	'sv-SE': [[319, 265], 12, 's', 'tzp', "Denna XML-fil verkar inte ha någon associerad stilinformation. Dokumentträdet visas nedan."],
+	   'th': [[483, 405], 20, 's', 'ไฟล์', "ไฟล์ XML นี้ ดูเหมือนจะไม่มีข้อมูลสไตล์ใด ๆ ที่เกี่ยวข้องกัน ต้นไม้เอกสารถูกแสดงด้านล่าง "],
 				// th: copypasta edited (addd a space) to cause correct number of lines: not that we are going to use translations in TZP
-	'tr-TR': [355, 14, 's', 'tzp', "Bu XML belgesi ile herhangi bir stil bilgisi bağlantılı değil. Belge ağacı aşağıda gösterilmiştir."],
-	'uk-UA': [373, 15, 's', 'tzp', "Схоже, цей XML-файл не має жодної пов'язаної інформації зі стилів. Нижче показано дерево елементів."],
-	'vi-VN': [553, 25, 's', 'tzp', "Tập tin XML có vẻ như không có thông tin kiểu nào đi kèm với nó. Cấu trúc tài liệu được hiển thị bên dưới."],
-	'zh-CN': [607, 24, 'ss', '文', "该 XML 文件并未包含任何关联的样式信息。文档树显示如下。"],
-	'zh-TW': [625, 25, 'ss', '包', "此 XML 未包含顯示用的樣式資訊。將以文件樹的方式顯示如下。"],
+	'tr-TR': [[355, 295], 14, 's', 'tzp', "Bu XML belgesi ile herhangi bir stil bilgisi bağlantılı değil. Belge ağacı aşağıda gösterilmiştir."],
+	'uk-UA': [[373, 310], 15, 's', 'tzp', "Схоже, цей XML-файл не має жодної пов'язаної інформації зі стилів. Нижче показано дерево елементів."],
+	'vi-VN': [[553, 460], 25, 's', 'tzp', "Tập tin XML có vẻ như không có thông tin kiểu nào đi kèm với nó. Cấu trúc tài liệu được hiển thị bên dưới."],
+	'zh-CN': [[607, 547], 24, 'ss', '文', "该 XML 文件并未包含任何关联的样式信息。文档树显示如下。"],
+	'zh-TW': [[625, 547], 25, 'ss', '包', "此 XML 未包含顯示用的樣式資訊。將以文件樹的方式顯示如下。"],
 } 
 
 function set_info() {
@@ -289,21 +255,26 @@ function set_info() {
 	let sNum = new Set()
 	for (const k of Object.keys(oTest).sort()) {
 		aLoop.push(k)
-		sNum.add(oTest[k][0]) // get unique sizes
+		let index = is144 ? 1 : 0
+		sNum.add(oTest[k][0][index]) // get unique sizes
 	}
 	aNum = Array.from(sNum).sort(function(a, b){return a - b}) // sort numerically
 	for (let i=0; i < aNum.length -1; i++) {
-		aSteps.push(aNum[i+1] - aNum[i])
+		aSteps.push([aNum[i+1] +' to '+ aNum[i], aNum[i+1] - aNum[i]])
 	}
+	console.log('TB'+ (is144 ? ' (FF144+)' : '') +', Windows 11, DRP 1, 100% zoom data')
+	console.log('Range\n', aNum)
+	console.log('Steps\n', aSteps)
 }
 
 function set_attributes(lang) {
+	let style
 	if (undefined == lang) {lang = isLanguage}
 	try {
 		data = oTest[lang]
 		if (undefined !== data) {
 			// lang attribute and style
-			let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans' : 'mono') // class to apply
+			style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans' : 'mono') // class to apply
 			// note: pretty print changed to monospace in FF144+
 			// 1984997: Use monospace font for raw XML display
 			if (is144) {style = 'mono'}
@@ -326,6 +297,7 @@ function set_attributes(lang) {
 	} catch(e) {
 		console.log(e)
 	}
+	return style
 }
 set_info()
 
@@ -333,14 +305,6 @@ set_info()
 // we need to wait for the xml file to load
 	// just stick it behind a button for now
 function measure(isLoop = false, aList) {
-
-	// after first manual run, add resize eevent
-	if (!hasRun) {
-		hasRun = true
-		window.addEventListener("resize", measure())
-	}
-
-
 	let xmlH, xmlError = false
 	if (undefined == aList || aList.length == 0) {
 		aList = isLoop ? aLoop : [isLanguage]
@@ -357,6 +321,12 @@ function measure(isLoop = false, aList) {
 			xmlError = true
 			xmlH = e+''
 		}
+		if ('number' == typeof xmlH && xmlH < 50) {
+			// do nothing, the user clicked before the xml loaded
+			// ands instead measured the empty iframe
+			xmlError = true
+			xmlH = 'XML not loaded yet... try again'
+		}
 		document.getElementById('xmlresult').innerHTML = xmlH
 	}
 
@@ -368,7 +338,8 @@ function measure(isLoop = false, aList) {
 	}
 	let heightSet = new Set()
 	aList.forEach(function(lang){
-		set_attributes(lang)
+		let style = set_attributes(lang)
+		heightSet.clear()
 		if (undefined !== data) {
 			for (const t of Object.keys(oTarget)) {
 				let height = oTarget[t].getBoundingClientRect().height
@@ -376,16 +347,32 @@ function measure(isLoop = false, aList) {
 				let info = '', match = ''
 				if ('lines' == t) {
 					document.getElementById('info').innerHTML = 'language: '+ lang + (isLoop ? ' [simulated]' : '')
-					let diff = data[0] - height // debugging diff
-					oData[lang] = diff
-					let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans-serif' : 'mono')
+					let index = is144 ? 1 : 0
+					let diff = data[0][index] - height // debugging diff
+					oData[lang] = [diff, style]
 					if (!xmlError) {
 						let realdiff = height - xmlH
 						// allow for some system scaling: not sure if I've exactly replicated the code/css
-						// sometimes we can be out by a TINY bit (0.00006... is the highest so far) but given overall
-						// minimal diffs (steps between entropy buckets in numerical order) are 2 or 3 pixels (in TB15
-						// at 100% zoom, not sure about 144+ with monospace) we can allow some wriggle room - let's try ± 0.25
-						let isMatch = (Math.abs(height - xmlH) < 0.25)
+						// sometimes we can be out by a TINY bit (0.00006... is the highest so far, excluding aIncrease in TB16 below)
+						// but given overall minimal diffs (steps between entropy buckets in numerical order) are 2 or 3 pixels
+						// in TB at 100% zoom, not sure about 144+ with monospace) we can allow some wriggle room - let's try ± 0.25
+						let margin = 0.25
+						if (is144) {
+							// CJK has issues: about 6 pixels diff, but they are large and have
+							// big steps to the nearest other langauge sizes
+							let aIncrease = [
+								// at least on windows DRP 1 (at 100% zoom)
+									// all are miles away from en-US which is the only one spoofed
+									// amd due to fixing mismatched locales+language + forcing restart on lang change
+									// we should never get anything but the actual lang vs en-US
+								'ja','ja-JP', // at 961 nearest is 892 = ko = 69 away 
+								'ko',         // at 892 nearest is 961 = ja = 69 away
+								'zh-CN',      // at 547 nearest is 562 = fa-IR = 15 away
+								'zh-TW'       // at 547 nearest is 562 = fa-IR = 15 away
+							]
+							if (aIncrease.includes(lang)) {margin = 12}
+						}
+						let isMatch = (Math.abs(height - xmlH) < margin)
 						match = ''
 						if (!isLoop) {
 							match = (isMatch ? sg +' [' + green_tick : sb +' ['+ red_cross)+' match xml'
@@ -397,12 +384,11 @@ function measure(isLoop = false, aList) {
 				}
 				let sizes =''
 				if ('latin' == t) {sizes = (1 == heightSet.size ? sg +' ['+ green_tick : sb +' ['+ red_cross) + ' test sizes match each other]'+ sc}
-				document.getElementById(t + 'result').innerHTML = height + match + sizes//+ info
+				document.getElementById(t + 'result').innerHTML = height + match + sizes //+ info
 			}
 		}
 	})
-	
-	//if (isLoop) {console.log(oData)}
+	if (isLoop) {console.log('TB'+ (is144 ? ' (FF144+)' : '') +', Windows 11, DRP 1, 100% zoom check\n', oData)}
 }
 
 
