@@ -2,11 +2,21 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>app language: prettyprint </title>
+  <script src="testglobals.js"></script>
+  <script src="testgeneric.js"></script>
 	<style>
+		:root{
+			--test7: #9ddc9d;
+			--testbad: #ff8787;
+		}
 		.mono {font-family: monospace}
 		.sans {font-family: sans-serif}
 		.serif {font-family: serif}
 		code {background: rgba(142, 142, 145, 0.25)}
+
+		.good {color: var(--test7);}
+		.bad {color: var(--testbad);}
+
 
 		.spaces {white-space: pre-wrap;}
 		td.top {vertical-align: top;}
@@ -109,8 +119,14 @@
 
 <script>
 'use strict';
-/*
 
+Promise.all([
+	get_globals()
+]).then(function(){
+	get_isVer()
+})
+
+/*
 https://searchfox.org/firefox-main/source/dom/locales/en-US/dom = XMLPrettyPrint
 https://searchfox.org/firefox-main/source/dom/xml/resources/XMLPrettyPrint.xsl
 chrome://global/content/xml/XMLPrettyPrint.css
@@ -164,6 +180,13 @@ let oTest = {
 
 	// note: pretty print changed to monospace in FF144+
 	// 1984997: Use monospace font for raw XML display
+
+/*
+RFP spoof switches in the spoofed english translation, but font styles (default sizes? default-fonts?)
+cause AFAICT differences with ar, fa-IR, ja, ka-GE, ko-KR, th - all use sans-serif
+
+RFP or BB should backport 1984997: Use monospace font for raw XML display
+*/
 
 	   'ar': [376, 13, 'ss', 'ليبدو', "يبدو أنّه ليس لملفّ XML معلومات طُرِز ترتبط به. شجرة المستند معروضة بأسفل"],
 	   'be': [391, 16, 's', 'tzp', "Гэты файл XML не мае ніякіх звестак аб стылі, спалучаных з ім. Дрэва дакумента паказана ніжэй."],
@@ -242,8 +265,7 @@ function set_attributes(lang) {
 			let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans' : 'mono') // class to apply
 			// note: pretty print changed to monospace in FF144+
 			// 1984997: Use monospace font for raw XML display
-			// e.g. -> if (isVer > 143) {style = 'mono'}
-
+			if (isVer > 143) {style = 'mono'}
 			let aTargets = [translation, lines, latin]
 			aTargets.forEach(function(target){
 				target.setAttribute('lang', navigator.language)
@@ -270,6 +292,7 @@ set_info()
 // we need to wait for the xml file to load
 	// just stick it behind a button for now
 function measure(isLoop = false, aList) {
+	let xmlH, xmlError = false
 	if (undefined == aList || aList.length == 0) {
 		aList = isLoop ? aLoop : [isLanguage]
 	}
@@ -279,10 +302,10 @@ function measure(isLoop = false, aList) {
 	} else {
 		// not looping
 		document.getElementById('info').innerHTML = 'language: '+ isLanguage +' | locale: '	+ isLocale
-		let xmlH
 		try {
 			xmlH = xml.contentDocument.firstChild.getBoundingClientRect().height
 		} catch(e) {
+			xmlError = true
 			xmlH = e+''
 		}
 		document.getElementById('xmlresult').innerHTML = xmlH
@@ -293,21 +316,23 @@ function measure(isLoop = false, aList) {
 		'lines': lines.parentNode.parentNode,
 		'latin': latin.parentNode.parentNode,
 	}
-
 	aList.forEach(function(lang){
 		set_attributes(lang)
 		if (undefined !== data) {
 			for (const t of Object.keys(oTarget)) {
 				let height = oTarget[t].getBoundingClientRect().height
-				let info = ''
+				let info = '', match = ''
 				if ('lines' == t) {
 					document.getElementById('info').innerHTML = 'language: '+ lang +' [simulated]'
 					let diff = data[0] - height
 					oData[lang] = diff
-					let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans-serif' : 'mono') 
+					let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans-serif' : 'mono')
+					if (!xmlError) {
+						match = (height == xmlH ? sg +' [' + green_tick : sb +' ['+ red_cross) +' matches xml]'+ sc
+					}
 					info = ' [expected: ' + data[0] + ' | diff: ' + diff +' | font-family: ' + style +']'
 				}
-				document.getElementById(t + 'result').innerHTML = height + info
+				document.getElementById(t + 'result').innerHTML = height + match + info
 			}
 		}
 	})
