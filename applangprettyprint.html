@@ -379,7 +379,11 @@ function measure(isLoop = false, aList) {
 					let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans-serif' : 'mono')
 					if (!xmlError) {
 						let realdiff = height - xmlH
-						let isMatch = (Math.abs(height - xmlH) < 0.5)
+						// allow for some system scaling: not sure if I've exactly replicated the code/css
+						// sometimes we can be out by a TINY bit (0.00003...) but given overall minimal
+						// diffs are 2 or 3 pixels (in TB15 at 100% zoom, not sure about 144+ with monospace)
+						// we can allow some wriggle room - let's try ± 0.25
+						let isMatch = (Math.abs(height - xmlH) < 0.25)
 						match = (isMatch ? sg +' [' + green_tick : sb +' ['+ red_cross)+' match xml'
 						if (!isLoop && realdiff !== 0) {match += ' | diff: ' + realdiff}
 						match += ']'+ sc
