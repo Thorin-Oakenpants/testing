@@ -83,21 +83,21 @@
 		</td>
 		<!--translation-->
 		<td class="top">
-			<div class='xmlbox'>
+			<div class='xmlbox mono'>
 				<div class='xmltop'><div class='xmlcontent' id="translation"></div></div>
 				<div>&lt;a&gt;a&lt;/a&gt;</div>
 			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;
 		</td>
 		<!--simulate lines-->
 		<td class="top">
-			<div class='xmlbox'>
+			<div class='xmlbox mono'>
 				<div class='xmltop'><div class='xmlcontent' id="lines"></div></div>
 				<div>&lt;a&gt;a&lt;/a&gt;</div>
 			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
 		</td>
 		<!--simulate with only latin lines-->
 		<td class="top">
-			<div class='xmlbox'>
+			<div class='xmlbox mono'>
 				<div class='xmltop'><div class='xmlcontent' id="latin"></div></div>
 				<div>&lt;a&gt;a&lt;/a&gt;</div>
 			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
@@ -106,7 +106,6 @@
 		<td class="top"><iframe id='visual' width='300px' height='400px' src='applangprettyprint.xml'></iframe></td>
 	</tr>
 </table>
-
 
 <script>
 'use strict';
@@ -312,7 +311,7 @@ function set_attributes(lang) {
 }
 set_info()
 
-
+// https://thorin-oakenpants.github.io/testing/applangprettyprint.html
 // we need to wait for the xml file to load
 	// just stick it behind a button for now
 function measure(isLoop = false, aList) {
@@ -366,8 +365,10 @@ function measure(isLoop = false, aList) {
 		}
 	})
 	if (isLoop) {console.log(oData)}
-
 }
+
+window.addEventListener("resize", measure())
+
 </script>
 </body>
 </html>
