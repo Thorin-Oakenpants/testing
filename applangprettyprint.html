@@ -30,7 +30,7 @@
 
 <body>
 <p><button type="button" onclick="measure()">measure</button>
-	<p>Test generating deterministic results at any DPR. <b>These tests are only designed for Base Browser 15 stable</b></p>
+	<p>Test generating deterministic results at any DPR <!--<b>These tests are only designed for Base Browser 15 stable</b></p>-->
 	<details>
 	<ul>
 		<li>There are three test columns
@@ -46,6 +46,7 @@
 				<li>sets <code>font-family</code> attribute</li>
 			</ul>
 		</li>
+		<!--
 		<li>you can run <code>measure(true, codes)</code>
 			<ul>
 				<li><code>codes</code>: an optional array of Base Browser supported languages e.g <code>measure(true, ['ja'])</code>
@@ -53,6 +54,7 @@
 				<li>Note that the expected results are from	<b>windows 11</b> with <br> a <code>devicePixelRatio</code> of <code>1</code> and at <code>100%</code> zoom.</li>
 			</ul>
 		</li>
+		-->
 		<li>links
 			<ul>
 				<li><a target="_blank "href="https://searchfox.org/firefox-main/source/dom/xml/resources/XMLPrettyPrint.xsl">
@@ -227,7 +229,11 @@ let oTest = {
 RFP spoof switches in the spoofed english translation, but font styles (default sizes? default-fonts?)
 cause AFAICT differences with ar, fa-IR, ja, ka-GE, ko-KR, th - all use sans-serif
 
-RFP or BB should backport 1984997: Use monospace font for raw XML display
+RFP or BB could backport 1984997: Use monospace font for raw XML display
+
+also seems as if those langs also don't use mono when spoofing english - tested in FF149 and TB147
+- the "spoof" xml is missing the "Use monospace font for raw XML display" (I thought it just substituted it)?
+
 */
 
 	   'ar': [376, 13, 'ss', 'ليبدو', "يبدو أنّه ليس لملفّ XML معلومات طُرِز ترتبط به. شجرة المستند معروضة بأسفل"],
@@ -367,7 +373,7 @@ function measure(isLoop = false, aList) {
 				let height = oTarget[t].getBoundingClientRect().height
 				let info = '', match = ''
 				if ('lines' == t) {
-					document.getElementById('info').innerHTML = 'language: '+ lang +' [simulated]'
+					document.getElementById('info').innerHTML = 'language: '+ lang + (isLoop ? ' [simulated]' : '')
 					let diff = data[0] - height // debugging diff
 					oData[lang] = diff
 					let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans-serif' : 'mono')
@@ -375,7 +381,7 @@ function measure(isLoop = false, aList) {
 						let realdiff = height - xmlH
 						let isMatch = (Math.abs(height - xmlH) < 0.5)
 						match = (isMatch ? sg +' [' + green_tick : sb +' ['+ red_cross)+' match xml'
-						if (realdiff !== 0) {match += ' | diff: ' + realdiff}
+						if (!isLoop && realdiff !== 0) {match += ' | diff: ' + realdiff}
 						match += ']'+ sc
 					}
 					info = ' [expected: ' + data[0] + ' | diff: ' + diff +' | font-family: ' + style +']'
