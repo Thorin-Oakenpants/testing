@@ -2,8 +2,6 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>app language: prettyprint </title>
-  <script src="testglobals.js"></script>
-  <script src="testgeneric.js"></script>
 	<style>
 		:root{
 			--test7: #9ddc9d;
@@ -119,12 +117,36 @@
 
 <script>
 'use strict';
-
-Promise.all([
-	get_globals()
-]).then(function(){
-	get_isVer()
-})
+let is144 = false
+try {
+	let list = [
+		[DataTransfer, 'DataTransfer', 'mozSourceNode'],
+		[Document, 'Document', 'mozFullScreen'],
+		[HTMLCanvasElement, 'HTMLCanvasElement', 'mozPrintCallback'],
+		[HTMLElement, 'HTMLElement', 'onmozfullscreenerror'],
+		[HTMLVideoElement, 'HTMLVideoElement', 'mozDecodedFrames'],
+		[IDBIndex, 'IDBIndex', 'mozGetAllKeys'],
+		[IDBObjectStore, 'IDBObjectStore', 'mozGetAll'],
+		[Screen, 'Screen', 'mozOrientation'], // 1325110: mozOrientation slated for deprecation
+		[SVGElement, 'SVGElement', 'onmozfullscreenchange'] 
+	]
+	let obj, prop, aNo = []
+	list.forEach(function(array) {
+		obj = array[0]
+		prop = array[2]
+		if ('function' === typeof obj
+			&& ('object' === typeof Object.getOwnPropertyDescriptor(obj.prototype, prop))) {
+		} else {
+			aNo.push(array[1])
+		}
+	})
+	let found = (list.length - aNo.length)
+	if (found > 5) {
+		if (undefined == window.CSS2Properties) {is144 = true} // at least FF144
+	}
+} catch(e) {
+	console.log(e)
+}
 
 /*
 https://searchfox.org/firefox-main/source/dom/locales/en-US/dom = XMLPrettyPrint
@@ -265,7 +287,7 @@ function set_attributes(lang) {
 			let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans' : 'mono') // class to apply
 			// note: pretty print changed to monospace in FF144+
 			// 1984997: Use monospace font for raw XML display
-			if (isVer > 143) {style = 'mono'}
+			if (is144) {style = 'mono'}
 			let aTargets = [translation, lines, latin]
 			aTargets.forEach(function(target){
 				target.setAttribute('lang', navigator.language)
