@@ -83,23 +83,23 @@
 		</td>
 		<!--translation-->
 		<td class="top">
-			<div class='xmlbox mono'>
+			<div class='xmlbox'>
 				<div class='xmltop'><div class='xmlcontent' id="translation"></div></div>
-				<div>&lt;a&gt;a&lt;/a&gt;</div>
+				<div id='translationbottom'>&lt;a&gt;a&lt;/a&gt;</div>
 			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;
 		</td>
 		<!--simulate lines-->
 		<td class="top">
-			<div class='xmlbox mono'>
+			<div class='xmlbox'>
 				<div class='xmltop'><div class='xmlcontent' id="lines"></div></div>
-				<div>&lt;a&gt;a&lt;/a&gt;</div>
+				<div id='linesbottom'>&lt;a&gt;a&lt;/a&gt;</div>
 			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
 		</td>
 		<!--simulate with only latin lines-->
 		<td class="top">
-			<div class='xmlbox mono'>
+			<div class='xmlbox'>
 				<div class='xmltop'><div class='xmlcontent' id="latin"></div></div>
-				<div>&lt;a&gt;a&lt;/a&gt;</div>
+				<div id='latinbottom'>&lt;a&gt;a&lt;/a&gt;</div>
 			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
 		</td>
 		<!--visual-->
@@ -116,6 +116,19 @@ let s0 = "<span class='",
 	sc = "</span>",
 	green_tick = "<span style='font-size: 10px;'><b>" + sg.trim() +" \u2713"+ sc + "</b></span>",
 	red_cross = "<span style='font-size: 10px;'><b>" + sb.trim() +" \u2715"+ sc + "</b></span>"
+
+let isLocale, isLanguage, data
+let xml = document.getElementById('xml')
+
+let translation = document.getElementById('translation'),
+	lines = document.getElementById('lines'),
+	latin = document.getElementById('latin')
+let translationbottom = document.getElementById('translationbottom'),
+	linesbottom = document.getElementById('linesbottom'),
+	latinbottom = document.getElementById('latinbottom')
+
+let aLoop = [], oData = {}, aNum, aSteps = []
+let hasRun = false
 
 // gecko version
 let is144 = false
@@ -143,7 +156,13 @@ try {
 	})
 	let found = (list.length - aNo.length)
 	if (found > 5) {
-		if (undefined == window.CSS2Properties) {is144 = true} // at least FF144
+		if (undefined == window.CSS2Properties) {
+			is144 = true // at least FF144
+			let aTargets144 = [translationbottom, linesbottom, latinbottom]
+			aTargets144.forEach(function(target){
+				target.classList.add('mono')
+			})
+		} 
 	}
 } catch(e) {
 	console.log(e)
@@ -255,13 +274,6 @@ RFP or BB should backport 1984997: Use monospace font for raw XML display
 	'zh-TW': [625, 25, 'ss', '包', "此 XML 未包含顯示用的樣式資訊。將以文件樹的方式顯示如下。"],
 } 
 
-let isLocale, isLanguage, data
-let xml = document.getElementById('xml')
-let translation = document.getElementById('translation')
-let lines = document.getElementById('lines')
-let latin = document.getElementById('latin')
-let aLoop = [], oData = {}, aNum, aSteps = []
-
 function set_info() {
 	try {isLocale = Intl.DateTimeFormat().resolvedOptions().locale} catch(e) {isLocale = 'error'; console.log(e)}
 	try {isLanguage = navigator.language} catch(e) {isLanguage = 'error'; console.log(e)}
@@ -315,6 +327,14 @@ set_info()
 // we need to wait for the xml file to load
 	// just stick it behind a button for now
 function measure(isLoop = false, aList) {
+
+	// after first manual run, add resize eevent
+	if (!hasRun) {
+		hasRun = true
+		window.addEventListener("resize", measure())
+	}
+
+
 	let xmlH, xmlError = false
 	if (undefined == aList || aList.length == 0) {
 		aList = isLoop ? aLoop : [isLanguage]
@@ -367,7 +387,6 @@ function measure(isLoop = false, aList) {
 	if (isLoop) {console.log(oData)}
 }
 
-window.addEventListener("resize", measure())
 
 </script>
 </body>
