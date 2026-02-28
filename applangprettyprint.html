@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>app language: prettyprint </title>
+	<style>
+		.mono {font-family: monospace}
+		.sans {font-family: sans-serif}
+		.serif {font-family: serif}
+		code {background: rgba(142, 142, 145, 0.25)}
+
+		.spaces {white-space: pre-wrap;}
+		td.top {vertical-align: top;}
+
+		.xmlbox {
+			width: 20px;
+		}
+		.xmltop {
+			background-color: #ccc;
+			border-bottom: 3px solid black;
+			margin-bottom: 1em;
+			padding: 0.5em;
+		}
+		.xmlcontent {
+			padding: 1em;
+		}
+
+	</style>
+</head>
+
+<body>
+<p><button type="button" onclick="measure()">measure</button>
+	<p>Test generating deterministic results at any DPR. <b>These tests are only designed for Base Browser 15 stable</b></p>
+	<details>
+	<ul>
+		<li>There are three test columns
+			<ul>
+				<li>translation: for a direct comparison</li>
+				<li>single: some languages require script glyphs (see <code>measure(true, ['zh-TW'])</code>)</li>
+				<li>latin: this was to see if could use the same word everywhere - nope, see <code>measure(true, ['zh-TW'])</code></li>
+			</ul>
+		</li>
+		<li>each test
+			<ul>
+				<li>sets <code>lang</code> attribute</li>
+				<li>sets <code>font-family</code> attribute</li>
+			</ul>
+		</li>
+		<li>you can run <code>measure(true, codes)</code>
+			<ul>
+				<li><code>codes</code>: an optional array of Base Browser supported languages e.g <code>measure(true, ['ja'])</code>
+				<li>This will output to console a list of differences from expected results</li>
+				<li>Note that the expected results are from	<b>windows 11</b> with <br> a <code>devicePixelRatio</code> of <code>1</code> and at <code>100%</code> zoom.</li>
+			</ul>
+		</li>
+		<li>links
+			<ul>
+				<li><a target="_blank "href="https://searchfox.org/firefox-main/source/dom/xml/resources/XMLPrettyPrint.xsl">
+					https://searchfox.org/firefox-main/source/dom/xml/resources/XMLPrettyPrint.xsl</a></li>
+				<li><a target="_blank "href="chrome://global/content/xml/XMLPrettyPrint.css">
+					chrome://global/content/xml/XMLPrettyPrint.css</a></li>
+			</ul>
+		</li>
+	</ul>
+	</details>
+	<br>
+
+	<div class="mono spaces">   language: <span id='info'></span></div>
+	<div class="mono spaces">        xml: <span id='xmlresult'></span></div>
+	<div class="mono spaces">translation: <span id='translationresult'></span></div>
+	<div class="mono spaces">     single: <span id='linesresult'></span></div>
+	<div class="mono spaces">latin lines: <span id='latinresult'></span></div>
+</p>
+
+<table>
+	<tr>
+		<!--measure-->
+		<td class="top">
+			<iframe id='xml' width='20px' height='30px' src='applangprettyprint.xml'></iframe>&nbsp;  &nbsp;  &nbsp;  &nbsp; 
+		</td>
+		<td class="top">
+			<iframe width='20px' height='1500px' src='applangprettyprint.xml'></iframe>&nbsp;  &nbsp;  &nbsp;  &nbsp; 
+		</td>
+		<!--translation-->
+		<td class="top">
+			<div class='xmlbox'>
+				<div class='xmltop'><div class='xmlcontent' id="translation"></div></div>
+				<div>&lt;a&gt;a&lt;/a&gt;</div>
+			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;
+		</td>
+		<!--simulate lines-->
+		<td class="top">
+			<div class='xmlbox'>
+				<div class='xmltop'><div class='xmlcontent' id="lines"></div></div>
+				<div>&lt;a&gt;a&lt;/a&gt;</div>
+			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
+		</td>
+		<!--simulate with only latin lines-->
+		<td class="top">
+			<div class='xmlbox'>
+				<div class='xmltop'><div class='xmlcontent' id="latin"></div></div>
+				<div>&lt;a&gt;a&lt;/a&gt;</div>
+			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
+		</td>
+		<!--visual-->
+		<td class="top"><iframe id='visual' width='300px' height='400px' src='applangprettyprint.xml'></iframe></td>
+	</tr>
+</table>
+
+
+<script>
+'use strict';
+/*
+
+https://searchfox.org/firefox-main/source/dom/locales/en-US/dom = XMLPrettyPrint
+https://searchfox.org/firefox-main/source/dom/xml/resources/XMLPrettyPrint.xsl
+chrome://global/content/xml/XMLPrettyPrint.css
+
+*/
+/*
+- looks like we can use a single (latn) word and create x lines
+	- except some scripts we need to use chars from that script
+	- ^ my (burmese), zh-*, ka-GE
+  - we just need to add that padding/margin around the translation
+*/
+
+let oTest = {
+	// note rtl results may vary in order due to mixed directional copypasta
+	// we can use 'XML' + word x (number of lines - 1) instead of the translation
+	// key: [height, lines, style, word, str]
+	// height is TB15 windows 11 zoom 100% DPR 1 (for dev testing) to see if we can match it
+
+	// test widths are at width 20 to maximize number of lines
+	// both short and tall match which gives us stability
+
+	// 20 unique heights
+	// height steps most are double digits but the main one is en-US since we force a reload
+	// when lang changing and the only one that can be different is spoof english
+	// but note: live lang load could cause any mix
+	/*
+	283:		
+	301:	18
+	319:	18
+	355:	36
+	373:	18
+	376:	 3
+	391:	15
+	​427:	36 <-- en-US
+	​445:	18
+	​455:	10
+	​463:	 8
+	​481:	18
+	​483:	 2
+​	553:	70
+​	565:	12
+​	607:	42
+​	625:	18
+​	901:	276
+​	967:	66
+​	1321:	354
+	*/
+
+	// the key is can we simulate an accurate measurement e.g. ±1
+	// and persist that accuracy at any DRP/zoom etc
+
+	// note: pretty print changed to monospace in FF144+
+	// 1984997: Use monospace font for raw XML display
+
+	   'ar': [376, 13, 'ss', 'ليبدو', "يبدو أنّه ليس لملفّ XML معلومات طُرِز ترتبط به. شجرة المستند معروضة بأسفل"],
+	   'be': [391, 16, 's', 'tzp', "Гэты файл XML не мае ніякіх звестак аб стылі, спалучаных з ім. Дрэва дакумента паказана ніжэй."],
+	   'bg': [373, 15, 's', 'tzp', "Този XML файл изглежда няма прикачена стилова информация. Дървото на документа е показано по-долу."],
+	   'ca': [463, 20, 's', 'tzp', "Aquest fitxer XML no sembla que tingui cap informació d'estil associada. Es visualitza a sota l'esquema en arbre del document."],
+	   'cs': [391, 16, 's', 'tzp', "Tento XML soubor nemá připojeny žádné informace o vzhledu prvků. Strom XML dokumentu je zobrazen níže."],
+	   'da': [283, 10, 's', 'tzp', "Denne XML-fil har ingen stilinformation tilknyttet. Dokumenttræet vises herunder."],
+	   'de': [427, 18, 's', 'tzp', "Mit dieser XML-Datei sind anscheinend keine Style-Informationen verknüpft. Nachfolgend wird die Baum-Ansicht des Dokuments angezeigt."],
+	'el-GR': [391, 16, 's', 'tzp', "Αυτό το αρχείο XML δεν φαίνεται να έχει συσχετισμένες πληροφορίες στυλ. Το δένδρο εγγράφου εμφανίζεται παρακάτω."],
+	'en-US': [463, 20, 's', 'tzp', "This XML file does not appear to have any style information associated with it. The document tree is shown below."],
+	'es-ES': [427, 18, 's', 'tzp', "Este fichero XML no parece tener ninguna información de estilo asociada. Se muestra debajo el árbol del documento."],
+	'fa-IR': [565, 22, 'ss', 'تتت', "اطلاعات XML به نظر می‌رسد که این پروندهٔ نمایش ندارد. درخت این در مورد سبک نوشتار در زیر نمایش داده شده است."],
+	'fi-FI': [391, 16, 's', 'tzp', "Tämän XML-dokumentin mukana ei näytä olevan mitään tyyli- tai muotoilutietoa. Dokumentin hierarkia-puu on alla."],
+	   'fr': [427, 18, 's', 'tzp', "Aucune information de style ne semble associée à ce fichier XML. L’arbre du document est affiché ci-dessous."],
+	'ga-IE': [445, 19, 's', 'tzp', "Is cosúil nach mbaineann aon fhaisnéis stíle leis an gcomhad XML seo. Tá an crann cáipéise le feiceáil thíos."],
+	   'he': [355, 14, 's', 'קובץ', "מידע על סגנון נראה שלקובץ XML זה אין המשויך אליו. עץ המסמך מוצג להלן"],
+	'hu-HU': [319, 12, 's', 'tzp', "Ehhez az XML-fájlhoz nem tartozik stíluslap-információ. A dokumentumfa az alábbi."],
+	   'id': [373, 15, 's', 'tzp', "Tampaknya berkas XML berikut tidak menginformasikan gaya yang diinginkan. Pohon dokumen ditampilkan di bawah ini."],
+	   'is': [445, 19, 's', 'tzp', "Þessi XML skrá virðist ekki vera með neinar upplýsingar um stílsnið. Tré fyrir skjalið er sýnt hér fyrir neðan."],
+	'it-IT': [463, 20, 's', 'tzp', "Sembra che il file XML specificato non abbia un foglio di stile associato. L’albero del documento è visualizzato di seguito."],
+     'ja': [967, 45, 's', '示',   "この XML ファイルにはスタイル情報が関連付けられていないようです。以下にドキュメントツリーを表示します。"],
+	'ka-GE': [455, 16, 's', 'მჩნ', "ეს XML-ფაილი, როგორც ჩანს, არ შეიცავს მასთან დაკავშირებული სტილის რამე მონაცემებს. დოკუმენტის სქემა ქვემოთაა მოყვანილი."],
+	'ko-KR': [901, 38, 'ss', '이', "이 XML 파일은 관련된 스타일 정보를 가지고 있지 않은 것 같습니다. 문서 트리는 아래와 같습니다."],
+	   'lt': [319, 12, 's', 'tzp', "XML failas neturi susietos su juo stilių informacijos. Dokumento medis parodytas žemiau."],
+	'mk-MK': [481, 21, 's', 'tzp', "Се чини дека оваа XML датотека нема информации за стилот кои се однесуваат на неа. Стеблото на документот е прикажано подолу."],
+	   'ms': [373, 15, 's', 'tzp', "Fail XML tidak ada sebarang maklumat gaya yang dikaitkan dengannya. Pepohon dokumen ditunjukkan di bawah."],
+	   'my': [1321, 31, 's', 'ဆက်', "XML ဖိုင်မှာ ၄င်းနဲ့ သက်ဆိုင်တဲ့ အချက်အလက် ပုံစံတခုခု ရှိပုံမပေါ်ဘူး။ အချက်အလက် ဆင်းသက်မှုကို အောက်မှာ ဖေါ်ပြထားတယ်။"],
+	'nb-NO': [301, 11, 's', 'tzp', "Denne XML-filen har ingen vedlagt stilinformasjon. Rent dokumenttre vises under."],
+	   'nl': [355, 14, 's', 'tzp', "Dit XML-bestand lijkt geen geassocieerde stijlinformatie te hebben. De documentstructuur is hieronder weergegeven."],
+	   'pl': [373, 15, 's', 'tzp', "Podany plik XML nie zawiera żadnych informacji o stylach z nim związanych. Poniżej wyświetlone jest drzewo dokumentu."],
+	'pt-BR': [463, 20, 's', 'tzp', "Este arquivo XML não parece ter qualquer informação de estilo associado a ele. A estrutura do documento é mostrada abaixo."],
+	'pt-PT': [481, 21, 's', 'tzp', "Este ficheiro XML não parece ter qualquer tipo de informação de estilo associada. A árvore do documento é mostrada em baixo."],
+	'ro-RO': [445, 19, 's', 'tzp', "Acest fișier XML nu pare să aibă vreo informație de stil asociată lui. Mai jos este afișat arborele documentului."],
+	'ru-RU': [355, 14, 's', 'tzp', "С этим XML-файлом не связана ни одна таблица стилей. Ниже показано дерево элементов."],
+	   'sq': [445, 19, 's', 'tzp', "Kjo kartelë XML nuk duket se ka ndonjë të dhënë stili përshoqëruar asaj. Pema e dokumentit tregohet më poshtë."],
+	'sv-SE': [319, 12, 's', 'tzp', "Denna XML-fil verkar inte ha någon associerad stilinformation. Dokumentträdet visas nedan."],
+	   'th': [483, 20, 's', 'ไฟล์', "ไฟล์ XML นี้ ดูเหมือนจะไม่มีข้อมูลสไตล์ใด ๆ ที่เกี่ยวข้องกัน ต้นไม้เอกสารถูกแสดงด้านล่าง "],
+				// th: copypasta edited (addd a space) to cause correct number of lines: not that we are going to use translations in TZP
+	'tr-TR': [355, 14, 's', 'tzp', "Bu XML belgesi ile herhangi bir stil bilgisi bağlantılı değil. Belge ağacı aşağıda gösterilmiştir."],
+	'uk-UA': [373, 15, 's', 'tzp', "Схоже, цей XML-файл не має жодної пов'язаної інформації зі стилів. Нижче показано дерево елементів."],
+	'vi-VN': [553, 25, 's', 'tzp', "Tập tin XML có vẻ như không có thông tin kiểu nào đi kèm với nó. Cấu trúc tài liệu được hiển thị bên dưới."],
+	'zh-CN': [607, 24, 'ss', '文', "该 XML 文件并未包含任何关联的样式信息。文档树显示如下。"],
+	'zh-TW': [625, 25, 'ss', '包', "此 XML 未包含顯示用的樣式資訊。將以文件樹的方式顯示如下。"],
+} 
+
+let isLocale, isLanguage, data
+let xml = document.getElementById('xml')
+let translation = document.getElementById('translation')
+let lines = document.getElementById('lines')
+let latin = document.getElementById('latin')
+let aLoop = [], oData = {}, aNum, aSteps = []
+
+function set_info() {
+	try {isLocale = Intl.DateTimeFormat().resolvedOptions().locale} catch(e) {isLocale = 'error'; console.log(e)}
+	try {isLanguage = navigator.language} catch(e) {isLanguage = 'error'; console.log(e)}
+	document.getElementById('info').innerHTML = 'language: '+ isLanguage +' | locale: '	+ isLocale
+	set_attributes(isLanguage)
+	// populate aLoop
+	let sNum = new Set()
+	for (const k of Object.keys(oTest).sort()) {
+		aLoop.push(k)
+		sNum.add(oTest[k][0]) // get unique sizes
+	}
+	aNum = Array.from(sNum).sort(function(a, b){return a - b}) // sort numerically
+	for (let i=0; i < aNum.length -1; i++) {
+		aSteps.push(aNum[i+1] - aNum[i])
+	}
+}
+
+function set_attributes(lang) {
+	if (undefined == lang) {lang = isLanguage}
+	try {
+		data = oTest[lang]
+		if (undefined !== data) {
+			// lang attribute and style
+			let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans' : 'mono') // class to apply
+			// note: pretty print changed to monospace in FF144+
+			// 1984997: Use monospace font for raw XML display
+			// e.g. -> if (isVer > 143) {style = 'mono'}
+
+			let aTargets = [translation, lines, latin]
+			aTargets.forEach(function(target){
+				target.setAttribute('lang', navigator.language)
+				let newtarget = target.parentNode
+				newtarget.classList.remove('mono')
+				newtarget.classList.remove('serif')
+				newtarget.classList.remove('sans')
+				newtarget.classList.add(style)
+			})
+			// populate
+			let lineWords = Array(data[1]-1).fill(data[3]); lineWords.push('XML')
+			let latnWords = Array(data[1]-1).fill('latn'); latnWords.push('XML')
+			translation.innerHTML = data[4]
+			lines.innerHTML = lineWords.join(' ')
+			latin.innerHTML = latnWords.join(' ')
+		}
+	} catch(e) {
+		console.log(e)
+	}
+}
+set_info()
+
+
+// we need to wait for the xml file to load
+	// just stick it behind a button for now
+function measure(isLoop = false, aList) {
+	if (undefined == aList || aList.length == 0) {
+		aList = isLoop ? aLoop : [isLanguage]
+	}
+	if (isLoop) {
+		oData = {} // reset
+		document.getElementById('xmlresult').innerHTML = ''
+	} else {
+		// not looping
+		document.getElementById('info').innerHTML = 'language: '+ isLanguage +' | locale: '	+ isLocale
+		let xmlH
+		try {
+			xmlH = xml.contentDocument.firstChild.getBoundingClientRect().height
+		} catch(e) {
+			xmlH = e+''
+		}
+		document.getElementById('xmlresult').innerHTML = xmlH
+	}
+
+	let oTarget = {
+		'translation': translation.parentNode.parentNode,
+		'lines': lines.parentNode.parentNode,
+		'latin': latin.parentNode.parentNode,
+	}
+
+	aList.forEach(function(lang){
+		set_attributes(lang)
+		if (undefined !== data) {
+			for (const t of Object.keys(oTarget)) {
+				let height = oTarget[t].getBoundingClientRect().height
+				let info = ''
+				if ('lines' == t) {
+					document.getElementById('info').innerHTML = 'language: '+ lang +' [simulated]'
+					let diff = data[0] - height
+					oData[lang] = diff
+					let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans-serif' : 'mono') 
+					info = ' [expected: ' + data[0] + ' | diff: ' + diff +' | font-family: ' + style +']'
+				}
+				document.getElementById(t + 'result').innerHTML = height + info
+			}
+		}
+	})
+	if (isLoop) {console.log(oData)}
+
+}
+</script>
+</body>
+</html>
+
+
