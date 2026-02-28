@@ -335,6 +335,7 @@ function measure(isLoop = false, aList) {
 		document.getElementById('xmlresult').innerHTML = xmlH
 	}
 
+
 	let oTarget = {
 		'translation': translation.parentNode.parentNode,
 		'lines': lines.parentNode.parentNode,
@@ -348,15 +349,19 @@ function measure(isLoop = false, aList) {
 				let info = '', match = ''
 				if ('lines' == t) {
 					document.getElementById('info').innerHTML = 'language: '+ lang +' [simulated]'
-					let diff = data[0] - height
+					let diff = data[0] - height // debugging diff
 					oData[lang] = diff
 					let style = 's' == data[2] ? 'serif' : ('ss'== data[2] ? 'sans-serif' : 'mono')
 					if (!xmlError) {
-						match = (height == xmlH ? sg +' [' + green_tick : sb +' ['+ red_cross) +' matches xml]'+ sc
+						let realdiff = height - xmlH
+						let isMatch = (Math.abs(height - xmlH) < 0.5)
+						match = (isMatch ? sg +' [' + green_tick : sb +' ['+ red_cross)+' match xml'
+						if (realdiff !== 0) {match += ' | diff: ' + realdiff}
+						match += ']'+ sc
 					}
 					info = ' [expected: ' + data[0] + ' | diff: ' + diff +' | font-family: ' + style +']'
 				}
-				document.getElementById(t + 'result').innerHTML = height + match + info
+				document.getElementById(t + 'result').innerHTML = height + match //+ info
 			}
 		}
 	})
