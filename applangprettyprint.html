@@ -11,7 +11,13 @@
 		.bad {color: red;}
 		.spaces {white-space: pre-wrap;}
 		td.top {vertical-align: top;}
+		.inset {
+			padding-left: 15px;
+		}
+		.one {color: blue;}
+		.two {color: purple;}
 
+		/* NFI if I got this right: seems to work in windows */
 		.xmlbox {
 			width: 20px;
 		}
@@ -28,21 +34,38 @@
 </head>
 
 <body>
-<p><button type="button" onclick="measure()">measure</button>
-	<p>Test generating deterministic results at any DPR <!--<b>These tests are only designed for Base Browser 15 stable</b></p>-->
-	<details>
+<p>
+	<button type="button" onclick="measure()">measure</button>
+	<p>Test generating deterministic results at any DPR <b>[NOTE:</b> designed for Base Browser 15+: tested only Windows so far</p>
+	<details><summary>notes</summary>
 	<ul>
-		<li>There are three test columns
+		<li>There are three test columns (all these and the xmls use 20px width to ensure maximum lines)
 			<ul>
-				<li>translation: for a direct comparison</li>
-				<li>single: some languages may require script glyphs: ee <code>measure(true, ['my'])</code></li>
-				<li>latin: testing to see if we can simplfy all languages to use the same word
+				<li><u>visual</u>
+					<div class="inset">for a direct comparison to the XML visual next to it
+					<br>- this is just a visual where the words overflow (it's still 20px) but because of that sometimes <br>single-letter words can cause a mismatch in expected line numbers</li>
+					</div>
+				<li><u>latin</u> (to simplfy it)
+					<div class="inset">uses the same (western/latin?) multi-char (to ensure line numbers)<br>word across all languages (<b>latn</b>)
+						<br>- but some scripts require glyphs to force the correct font e.g. type <code>measure(true, ['my'])</code> into the console
+					</div>
+				<li><u>script</u> (to perfect it)
+					<div class="inset">repeats the same latin/western multi-char word by default (<b>latn</b>) across all languages
+						<br>except where it is needed and instead uses that script's unicode
+						<div class="inset">- e.g. type <code>measure(true, ['zh-TW'])</code>, where <code>zh-TW</code> uses <b>包</b>
+							<br>- e.g. <code>ja</code> uses <b>示</b>
+						</div>
+						<b>script</b> is the method that works
+						<br>- Note that FF144+ switches to monospace for all raw XML
+						<br>- Overcautious use in case the unicode causes new line heights
+					</div>
+				</li>
 			</ul>
 		</li>
 		<li>each test
 			<ul>
-				<li>sets <code>lang</code> attribute</li>
-				<li>sets <code>font-family</code> attribute</li>
+				<li>sets the <code>lang</code> attribute</li>
+				<li>sets a <code>font-family</code> attribute (e.g. serif, sans-serif)</li>
 			</ul>
 		</li>
 		<li>links
@@ -57,45 +80,58 @@
 	</details>
 	<br>
 
-	<div class="mono spaces">   language: <span id='info'></span></div>
-	<div class="mono spaces">        xml: <span id='xmlresult'></span></div>
-	<div class="mono spaces">translation: <span id='translationresult'></span></div>
-	<div class="mono spaces">     single: <span id='linesresult'></span></div>
-	<div class="mono spaces">latin lines: <span id='latinresult'></span></div>
+	<div class="mono spaces">language: <span id='info'></span></div>
+	<div class="mono spaces">     xml: <span id='xmlresult'></span></div>
+	<div class="mono spaces">  visual: <span id='translationresult'></span></div>
+	<div class="mono spaces">   latin: <span id='latinresult'></span></div>
+	<div class="mono spaces">  script: <span id='linesresult'></span></div>
 </p>
 
+
 <table>
+	<thead><tr>
+		<th colspan="3" class="one">XML</th>
+		<th colspan="3" class="two">TESTS</th>
+	</tr></thead>
 	<tr>
-		<!--measure-->
+		<td class="one">large visual</td>
+		<td class="one">test</td>
+		<td class="one">long visual</td>
+		<td class="two">visual</td>
+		<td class="two">latin</td>
+		<td class="two">script</td>
+
+	</tr>
+	<tr><td colspan="6" style="border-bottom; 2px;">&nbsp;</td></tr>
+
+	<tr>
+		<!--XML-->
+		<td class="top"><iframe id='visual' width='300px' height='400px' src='applangprettyprint.xml'></iframe></td>
 		<td class="top">
-			<iframe id='xml' width='20px' height='30px' src='applangprettyprint.xml'></iframe>&nbsp;  &nbsp;  &nbsp;  &nbsp; 
+			<iframe id='xml' width='20px' height='30px' src='applangprettyprint.xml'></iframe>&nbsp; &nbsp; &nbsp; &nbsp;
 		</td>
 		<td class="top">
-			<iframe width='20px' height='1500px' src='applangprettyprint.xml'></iframe>&nbsp;  &nbsp;  &nbsp;  &nbsp; 
+			<iframe width='20px' height='1500px' src='applangprettyprint.xml'></iframe>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
 		</td>
-		<!--translation-->
+		<!--TESTS-->
 		<td class="top">
 			<div class='xmlbox'>
 				<div class='xmltop'><div class='xmlcontent' id="translation"></div></div>
 				<div id='translationbottom'>&lt;a&gt;a&lt;/a&gt;</div>
-			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp; &nbsp; &nbsp;
+			</div>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 		</td>
-		<!--simulate lines-->
-		<td class="top">
-			<div class='xmlbox'>
-				<div class='xmltop'><div class='xmlcontent' id="lines"></div></div>
-				<div id='linesbottom'>&lt;a&gt;a&lt;/a&gt;</div>
-			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
-		</td>
-		<!--simulate with only latin lines-->
 		<td class="top">
 			<div class='xmlbox'>
 				<div class='xmltop'><div class='xmlcontent' id="latin"></div></div>
 				<div id='latinbottom'>&lt;a&gt;a&lt;/a&gt;</div>
 			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
 		</td>
-		<!--visual-->
-		<td class="top"><iframe id='visual' width='300px' height='400px' src='applangprettyprint.xml'></iframe></td>
+		<td class="top">
+			<div class='xmlbox'>
+				<div class='xmltop'><div class='xmlcontent' id="lines"></div></div>
+				<div id='linesbottom'>&lt;a&gt;a&lt;/a&gt;</div>
+			</div>&nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp; &nbsp;  &nbsp;  &nbsp;
+		</td>
 	</tr>
 </table>
 
@@ -172,6 +208,8 @@ chrome://global/content/xml/XMLPrettyPrint.css
   - we just need to add that padding/margin around the translation
 */
 
+let word = 'latn'
+
 let oTest = {
 	// note rtl results may vary in order due to mixed directional copypasta
 	// we can use 'XML' + word x (number of lines - 1) instead of the translation
@@ -200,48 +238,49 @@ also seems as if those langs also don't use mono when spoofing english - tested 
 	// key: [ [heightTB15, heightTB 144+], lines, style, word, str]
 	// height is windows 11 zoom 100% DPR 1 (for dev testing) to see if we can match it
  
+
 	   'ar': [[376, 364], 13, 'ss', 'ليبدو', "يبدو أنّه ليس لملفّ XML معلومات طُرِز ترتبط به. شجرة المستند معروضة بأسفل"],
-	   'be': [[391, 325], 16, 's', 'tzp', "Гэты файл XML не мае ніякіх звестак аб стылі, спалучаных з ім. Дрэва дакумента паказана ніжэй."],
-	   'bg': [[373, 310], 15, 's', 'tzp', "Този XML файл изглежда няма прикачена стилова информация. Дървото на документа е показано по-долу."],
-	   'ca': [[463, 385], 20, 's', 'tzp', "Aquest fitxer XML no sembla que tingui cap informació d'estil associada. Es visualitza a sota l'esquema en arbre del document."],
-	   'cs': [[391, 325], 16, 's', 'tzp', "Tento XML soubor nemá připojeny žádné informace o vzhledu prvků. Strom XML dokumentu je zobrazen níže."],
-	   'da': [[283, 235], 10, 's', 'tzp', "Denne XML-fil har ingen stilinformation tilknyttet. Dokumenttræet vises herunder."],
-	   'de': [[427, 355], 18, 's', 'tzp', "Mit dieser XML-Datei sind anscheinend keine Style-Informationen verknüpft. Nachfolgend wird die Baum-Ansicht des Dokuments angezeigt."],
-	'el-GR': [[391, 325], 16, 's', 'tzp', "Αυτό το αρχείο XML δεν φαίνεται να έχει συσχετισμένες πληροφορίες στυλ. Το δένδρο εγγράφου εμφανίζεται παρακάτω."],
-	'en-US': [[463, 385], 20, 's', 'tzp', "This XML file does not appear to have any style information associated with it. The document tree is shown below."],
-	'es-ES': [[427, 355], 18, 's', 'tzp', "Este fichero XML no parece tener ninguna información de estilo asociada. Se muestra debajo el árbol del documento."],
+	   'be': [[391, 325], 16, 's', word, "Гэты файл XML не мае ніякіх звестак аб стылі, спалучаных з ім. Дрэва дакумента паказана ніжэй."],
+	   'bg': [[373, 310], 15, 's', word, "Този XML файл изглежда няма прикачена стилова информация. Дървото на документа е показано по-долу."],
+	   'ca': [[463, 385], 20, 's', word, "Aquest fitxer XML no sembla que tingui cap informació d'estil associada. Es visualitza a sota l'esquema en arbre del document."],
+	   'cs': [[391, 325], 16, 's', word, "Tento XML soubor nemá připojeny žádné informace o vzhledu prvků. Strom XML dokumentu je zobrazen níže."],
+	   'da': [[283, 235], 10, 's', word, "Denne XML-fil har ingen stilinformation tilknyttet. Dokumenttræet vises herunder."],
+	   'de': [[427, 355], 18, 's', word, "Mit dieser XML-Datei sind anscheinend keine Style-Informationen verknüpft. Nachfolgend wird die Baum-Ansicht des Dokuments angezeigt."],
+	'el-GR': [[391, 325], 16, 's', word, "Αυτό το αρχείο XML δεν φαίνεται να έχει συσχετισμένες πληροφορίες στυλ. Το δένδρο εγγράφου εμφανίζεται παρακάτω."],
+	'en-US': [[463, 385], 20, 's', word, "This XML file does not appear to have any style information associated with it. The document tree is shown below."],
+	'es-ES': [[427, 355], 18, 's', word, "Este fichero XML no parece tener ninguna información de estilo asociada. Se muestra debajo el árbol del documento."],
 	'fa-IR': [[565, 562], 22, 'ss', 'تتت', "اطلاعات XML به نظر می‌رسد که این پروندهٔ نمایش ندارد. درخت این در مورد سبک نوشتار در زیر نمایش داده شده است."],
-	'fi-FI': [[391, 325], 16, 's', 'tzp', "Tämän XML-dokumentin mukana ei näytä olevan mitään tyyli- tai muotoilutietoa. Dokumentin hierarkia-puu on alla."],
-	   'fr': [[427, 355], 18, 's', 'tzp', "Aucune information de style ne semble associée à ce fichier XML. L’arbre du document est affiché ci-dessous."],
-	'ga-IE': [[445, 370], 19, 's', 'tzp', "Is cosúil nach mbaineann aon fhaisnéis stíle leis an gcomhad XML seo. Tá an crann cáipéise le feiceáil thíos."],
+	'fi-FI': [[391, 325], 16, 's', word, "Tämän XML-dokumentin mukana ei näytä olevan mitään tyyli- tai muotoilutietoa. Dokumentin hierarkia-puu on alla."],
+	   'fr': [[427, 355], 18, 's', word, "Aucune information de style ne semble associée à ce fichier XML. L’arbre du document est affiché ci-dessous."],
+	'ga-IE': [[445, 370], 19, 's', word, "Is cosúil nach mbaineann aon fhaisnéis stíle leis an gcomhad XML seo. Tá an crann cáipéise le feiceáil thíos."],
 	   'he': [[355, 308], 14, 's', 'קובץ', "מידע על סגנון נראה שלקובץ XML זה אין המשויך אליו. עץ המסמך מוצג להלן"],
-	'hu-HU': [[319, 265], 12, 's', 'tzp', "Ehhez az XML-fájlhoz nem tartozik stíluslap-információ. A dokumentumfa az alábbi."],
-	   'id': [[373, 310], 15, 's', 'tzp', "Tampaknya berkas XML berikut tidak menginformasikan gaya yang diinginkan. Pohon dokumen ditampilkan di bawah ini."],
-	   'is': [[445, 370], 19, 's', 'tzp', "Þessi XML skrá virðist ekki vera með neinar upplýsingar um stílsnið. Tré fyrir skjalið er sýnt hér fyrir neðan."],
-	'it-IT': [[463, 385], 20, 's', 'tzp', "Sembra che il file XML specificato non abbia un foglio di stile associato. L’albero del documento è visualizzato di seguito."],
+	'hu-HU': [[319, 265], 12, 's', word, "Ehhez az XML-fájlhoz nem tartozik stíluslap-információ. A dokumentumfa az alábbi."],
+	   'id': [[373, 310], 15, 's', word, "Tampaknya berkas XML berikut tidak menginformasikan gaya yang diinginkan. Pohon dokumen ditampilkan di bawah ini."],
+	   'is': [[445, 370], 19, 's', word, "Þessi XML skrá virðist ekki vera með neinar upplýsingar um stílsnið. Tré fyrir skjalið er sýnt hér fyrir neðan."],
+	'it-IT': [[463, 385], 20, 's', word, "Sembra che il file XML specificato non abbia un foglio di stile associato. L’albero del documento è visualizzato di seguito."],
      'ja': [[967, 961], 45, 's', '示',   "この XML ファイルにはスタイル情報が関連付けられていないようです。以下にドキュメントツリーを表示します。"],
   'ja-JP': [[967, 961], 45, 's', '示',   "この XML ファイルにはスタイル情報が関連付けられていないようです。以下にドキュメントツリーを表示します。"],
 				// ^ ja-JP for macOS
 	'ka-GE': [[455, 373], 16, 's', 'მჩნ', "ეს XML-ფაილი, როგორც ჩანს, არ შეიცავს მასთან დაკავშირებული სტილის რამე მონაცემებს. დოკუმენტის სქემა ქვემოთაა მოყვანილი."],
 	'ko-KR': [[901, 892], 38, 'ss', '이', "이 XML 파일은 관련된 스타일 정보를 가지고 있지 않은 것 같습니다. 문서 트리는 아래와 같습니다."],
-	   'lt': [[319, 265], 12, 's', 'tzp', "XML failas neturi susietos su juo stilių informacijos. Dokumento medis parodytas žemiau."],
-	'mk-MK': [[481, 400], 21, 's', 'tzp', "Се чини дека оваа XML датотека нема информации за стилот кои се однесуваат на неа. Стеблото на документот е прикажано подолу."],
-	   'ms': [[373, 310], 15, 's', 'tzp', "Fail XML tidak ada sebarang maklumat gaya yang dikaitkan dengannya. Pepohon dokumen ditunjukkan di bawah."],
+	   'lt': [[319, 265], 12, 's', word, "XML failas neturi susietos su juo stilių informacijos. Dokumento medis parodytas žemiau."],
+	'mk-MK': [[481, 400], 21, 's', word, "Се чини дека оваа XML датотека нема информации за стилот кои се однесуваат на неа. Стеблото на документот е прикажано подолу."],
+	   'ms': [[373, 310], 15, 's', word, "Fail XML tidak ada sebarang maklumat gaya yang dikaitkan dengannya. Pepohon dokumen ditunjukkan di bawah."],
 	   'my': [[1321,730], 31, 's', 'ဆက်', "XML ဖိုင်မှာ ၄င်းနဲ့ သက်ဆိုင်တဲ့ အချက်အလက် ပုံစံတခုခု ရှိပုံမပေါ်ဘူး။ အချက်အလက် ဆင်းသက်မှုကို အောက်မှာ ဖေါ်ပြထားတယ်။"],
-	'nb-NO': [[301, 250], 11, 's', 'tzp', "Denne XML-filen har ingen vedlagt stilinformasjon. Rent dokumenttre vises under."],
-	   'nl': [[355, 295], 14, 's', 'tzp', "Dit XML-bestand lijkt geen geassocieerde stijlinformatie te hebben. De documentstructuur is hieronder weergegeven."],
-	   'pl': [[373, 310], 15, 's', 'tzp', "Podany plik XML nie zawiera żadnych informacji o stylach z nim związanych. Poniżej wyświetlone jest drzewo dokumentu."],
-	'pt-BR': [[463, 385], 20, 's', 'tzp', "Este arquivo XML não parece ter qualquer informação de estilo associado a ele. A estrutura do documento é mostrada abaixo."],
-	'pt-PT': [[481, 400], 21, 's', 'tzp', "Este ficheiro XML não parece ter qualquer tipo de informação de estilo associada. A árvore do documento é mostrada em baixo."],
-	'ro-RO': [[445, 370], 19, 's', 'tzp', "Acest fișier XML nu pare să aibă vreo informație de stil asociată lui. Mai jos este afișat arborele documentului."],
-	'ru-RU': [[355, 295], 14, 's', 'tzp', "С этим XML-файлом не связана ни одна таблица стилей. Ниже показано дерево элементов."],
-	   'sq': [[445, 370], 19, 's', 'tzp', "Kjo kartelë XML nuk duket se ka ndonjë të dhënë stili përshoqëruar asaj. Pema e dokumentit tregohet më poshtë."],
-	'sv-SE': [[319, 265], 12, 's', 'tzp', "Denna XML-fil verkar inte ha någon associerad stilinformation. Dokumentträdet visas nedan."],
+	'nb-NO': [[301, 250], 11, 's', word, "Denne XML-filen har ingen vedlagt stilinformasjon. Rent dokumenttre vises under."],
+	   'nl': [[355, 295], 14, 's', word, "Dit XML-bestand lijkt geen geassocieerde stijlinformatie te hebben. De documentstructuur is hieronder weergegeven."],
+	   'pl': [[373, 310], 15, 's', word, "Podany plik XML nie zawiera żadnych informacji o stylach z nim związanych. Poniżej wyświetlone jest drzewo dokumentu."],
+	'pt-BR': [[463, 385], 20, 's', word, "Este arquivo XML não parece ter qualquer informação de estilo associado a ele. A estrutura do documento é mostrada abaixo."],
+	'pt-PT': [[481, 400], 21, 's', word, "Este ficheiro XML não parece ter qualquer tipo de informação de estilo associada. A árvore do documento é mostrada em baixo."],
+	'ro-RO': [[445, 370], 19, 's', word, "Acest fișier XML nu pare să aibă vreo informație de stil asociată lui. Mai jos este afișat arborele documentului."],
+	'ru-RU': [[355, 295], 14, 's', word, "С этим XML-файлом не связана ни одна таблица стилей. Ниже показано дерево элементов."],
+	   'sq': [[445, 370], 19, 's', word, "Kjo kartelë XML nuk duket se ka ndonjë të dhënë stili përshoqëruar asaj. Pema e dokumentit tregohet më poshtë."],
+	'sv-SE': [[319, 265], 12, 's', word, "Denna XML-fil verkar inte ha någon associerad stilinformation. Dokumentträdet visas nedan."],
 	   'th': [[483, 405], 20, 's', 'ไฟล์', "ไฟล์ XML นี้ ดูเหมือนจะไม่มีข้อมูลสไตล์ใด ๆ ที่เกี่ยวข้องกัน ต้นไม้เอกสารถูกแสดงด้านล่าง "],
 				// th: copypasta edited (addd a space) to cause correct number of lines: not that we are going to use translations in TZP
-	'tr-TR': [[355, 295], 14, 's', 'tzp', "Bu XML belgesi ile herhangi bir stil bilgisi bağlantılı değil. Belge ağacı aşağıda gösterilmiştir."],
-	'uk-UA': [[373, 310], 15, 's', 'tzp', "Схоже, цей XML-файл не має жодної пов'язаної інформації зі стилів. Нижче показано дерево елементів."],
-	'vi-VN': [[553, 460], 25, 's', 'tzp', "Tập tin XML có vẻ như không có thông tin kiểu nào đi kèm với nó. Cấu trúc tài liệu được hiển thị bên dưới."],
+	'tr-TR': [[355, 295], 14, 's', word, "Bu XML belgesi ile herhangi bir stil bilgisi bağlantılı değil. Belge ağacı aşağıda gösterilmiştir."],
+	'uk-UA': [[373, 310], 15, 's', word, "Схоже, цей XML-файл не має жодної пов'язаної інформації зі стилів. Нижче показано дерево елементів."],
+	'vi-VN': [[553, 460], 25, 's', word, "Tập tin XML có vẻ như không có thông tin kiểu nào đi kèm với nó. Cấu trúc tài liệu được hiển thị bên dưới."],
 	'zh-CN': [[607, 547], 24, 'ss', '文', "该 XML 文件并未包含任何关联的样式信息。文档树显示如下。"],
 	'zh-TW': [[625, 547], 25, 'ss', '包', "此 XML 未包含顯示用的樣式資訊。將以文件樹的方式顯示如下。"],
 } 
