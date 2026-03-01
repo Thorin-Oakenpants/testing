@@ -280,7 +280,7 @@ function set_attributes(lang) {
 			if (is144) {style = 'mono'}
 			let aTargets = [translation, lines, latin]
 			aTargets.forEach(function(target){
-				target.setAttribute('lang', navigator.language)
+				target.setAttribute('lang', lang)
 				let newtarget = target.parentNode
 				newtarget.classList.remove('mono')
 				newtarget.classList.remove('serif')
