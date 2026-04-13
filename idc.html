@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>IDC</title>
+<style>
+.mono {font-family: monospace, "Courier New";}
+.spaces {white-space: pre-wrap;}
+</style>
+</head>
+<body>
+
+<ul>InputDeviceCapabilities: links
+	<li><a href="https://wicg.github.io/input-device-capabilities/#dom-inputdevicecapabilities" target ="_blank">https://wicg.github.io/input-device-capabilities/#dom-inputdevicecapabilities</a></li>
+	<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/InputDeviceCapabilities" target ="_blank">https://developer.mozilla.org/en-US/docs/Web/API/InputDeviceCapabilities</a></li>
+	<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/InputDeviceCapabilities/firesTouchEvents" target ="_blank">https://developer.mozilla.org/en-US/docs/Web/API/InputDeviceCapabilities/firesTouchEvents</a></li>
+</ul>
+<button type="button" onclick="run('manual')">run</button>
+
+<p>
+<div class='mono spaces'>  auto: <span id='outputauto'><span></div>
+<div class='mono spaces'>manual: <span id='outputmanual'><span></div>
+</p>
+
+
+<script>
+'use strict';
+
+function run(type) {
+	let target = document.getElementById('output'+type)
+	let value
+	try {
+		if ('undefined' == typeof window.InputDeviceCapabilities) {
+			value = 'undefined'
+		} else {
+			let idc = new InputDeviceCapabilities()
+			value = idc.firesTouchEvents
+		}
+	} catch(e) {
+		value = e+''
+	}
+	target.innerHTML = value
+}
+run('auto')
+
+</script>
+</body>
+</html>
