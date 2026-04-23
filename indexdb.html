@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=500">
+	<title>idb order</title>
+	<style>
+		.mono {font-family: monospace, "Courier New"; font-size: var(--txtSize);}		
+	</style>
+</head>
+
+
+<body>
+	<p><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=2024220" target="_blank">Bugzilla 2024220</a></p>
+	<pre class="mono" id="out">running...</pre>
+ 
+<script>
+'use strict';
+
+function mini(str) {
+	// https://stackoverflow.com/a/22429679
+	const json = `${JSON.stringify(str)}`
+	let i, len, hash = 0x811c9dc5
+	for (i = 0, len = json.length; i < len; i++) {
+		hash = Math.imul(31, hash) + json.charCodeAt(i) | 0
+	}
+	return ('0000000' + (hash >>> 0).toString(16)).slice(-8)
+}
+
+// doesn't look like applang/locale has any bearing: hash is stable in normal windows mode
+let sort = [
+	'A','a','aa','ch','ez','kz','ng','ph','ts','tt','y','\u00E2','\u00E4','\u00E7\a','\u00EB','\u00ED','\u00EE','\u00F0',
+	'\u00F1','\u00F6','\u0107','\u0109','\u0137\a','\u0144','\u0149','\u01FB','\u025B','\u03B1','\u040E','\u0439','\u0453',
+	'\u0457','\u04F0','\u0503','\u0561','\u05EA','\u0627','\u0649','\u06C6','\u06C7','\u06CC','\u06FD','\u0934','\u0935',
+	'\u09A4','\u09CE','\u0A85','\u0B05','\u0B85','\u0C05','\u0C85','\u0D85','\u0E24','\u0E9A','\u10350','\u10D0','\u1208',
+	'\u1780','\u1820','\u1D95','\u1DD9','\u1ED9','\u1EE3','\u311A','\u3147','\u4E2D','\uA647','\uFB4A'
+]
+let aALL = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p']
+//CREATED = sort.sort()
+let PREFIX = 'idb_order_cross_'
+
+
+function get_idb_order(runNo = 2) {
+	let aTest
+	if (1 == runNo) {
+		aTest = ['a','b','c','d','e','f','g','h']
+	} else {
+		aTest = aALL
+	}
+
+	let tStart = performance.now()
+	const names = aTest.map((x) => PREFIX + x)
+
+/*
+	d925c1ef = idb_order_cross_'
+	persists across sanitizing + sessions
+	prefix name changes hash
+
+	idb_order_ : normal: persists across sanitizing + sessions 
+// 3c466def: pbmode: 
+// 7bb0236f: 
+	idb_order_ : pbmode
+	- sanitized everything, open in normal mode, open pdmodem, test
+	- 987cc86f
+	- close pbmode, oipen pbmode, test
+	- 5a15d36f
+  - survives pobmode session via normal window
+	- ^ "The ordering persists even after all Private Browsing windows are closed, as long as the Firefox process is still running."
+
+	- does not survive a new firefox session
+
+
+*/
+	async function idb_order() {
+		const openDb = (name) =>
+			new Promise((res, rej) => {
+				const req = indexedDB.open(name, 1);
+				req.onsuccess = () => res(req.result);
+				req.onerror = () => rej(req.error);
+		})
+/*
+		// might need deleteDb if we don't sanitize
+		const deleteDb = (name) =>
+			new Promise((r) => {
+				const req = indexedDB.deleteDatabase(name);
+				req.onsuccess = req.onerror = req.onblocked = () => r();
+			});
+		for (const n of names) await deleteDb(n);
+*/
+		for (const n of names) await openDb(n);
+
+		const listed = (await indexedDB.databases())
+			.map((d) => d?.name)
+			.filter((n) => n?.startsWith(PREFIX))
+			.map((n) => n.slice(PREFIX.length));
+
+		let tEnd = performance.now()
+		console.log('end', tEnd)
+
+		document.getElementById('out').textContent =
+			'perf: '+ (tEnd - tStart) + ' ms'+
+			'\n\ncreated: '+ mini(aTest) +'\n'+ aTest.join(', ') +
+			'\n\nmetric: '+ mini(listed) +'\n'+ listed.join(', ')
+		return [CREATED, listed]
+	}
+
+	Promise.all([
+		idb_order(),
+	]).then(function(res){
+		let data = res
+		let mCreated = res[0][0]. mListed = res[0][1]
+		/*
+		document.getElementById('out').textContent =
+			'created: '+ mini(mCreated) +'\n'+ mCreated.join(', ') +
+			'\n\nlisted: '+ mini(mListed) +'\n'+ mListed.join(', ')
+		*/
+	})
+}
+get_idb_order()
+
+</script>
+</body>
+</html>
