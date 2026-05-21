@@ -23,26 +23,37 @@ body {background-color: white; color: black;}
 	-webkit-text-size-adjust: auto;
 	text-size-adjust: auto;
 }
+.button0 {
+	width: 70px;
+	height: 50px;
+}
+.button1 {
+	width: 130px;
+	height: 50px;
+}
+.button2 {
+	width: 110px;
+	height: 50px;
+}
+
 
 </style>
 </head>
 <br>
-<button type="button" onclick="run()">run</button>
-<button type="button" onclick="toggle('offscreen')">toggle offscreen</button>
+<button type="button" class="button0" onclick="run()">run</button>
+<button type="button" class="button1" onclick="toggle('offscreen')">toggle offscreen</button>
+<button type="button" class="button2" onclick="toggle_text()">toggle text</button>
+<button type="button" class="button2" onclick="toggle_lines()">toggle lines</button>
 <br><br>
 
 <div class="mono">results: <br><span id="output" class="spaces"></span></div>
 <br>
-<div id="offscreen" class="offscreen">
+<div id="offscreen">
 	<u>text-size-adjust: none;</u><br><br>
-	<div id="control" class="noadjust">
-		<span>Vivamus ultricies vitae sem vel eleifend.<br>Etiam commodo eu nibh a egestas.<br>Donec vehicula porta elementum.<br>Nullam placerat nulla ac tellus suscipit</span>
-	</div>
+	<div id="control" class="noadjust"></div>
 	<br>
 	<u>text-size-adjust: auto;</u><br><br>
-	<div id="test" class="adjust">
-		<span>Vivamus ultricies vitae sem vel eleifend.<br>Etiam commodo eu nibh a egestas.<br>Donec vehicula porta elementum.<br>Nullam placerat nulla ac tellus suscipit</span>
-	</div>
+	<div id="test" class="adjust"></div>
 </div>
 
 
@@ -50,10 +61,43 @@ body {background-color: white; color: black;}
 
 <script>
 'use strict';
+/*
+	chrome://flags > #force-off-text-autosizing
+notes:
+- text must be visible on screen: when offscreen any text adjust reverts
+- 
+*/
+
+let oText = {
+	0: 'abc',
+	1: 'abc def',
+	2: 'abc def ghi',
+	3: 'abc def ghi jkl',
+	4: 'abc def ghi jkl mno',
+	5: 'abc def ghi jkl mno pqr',
+}
+let intText = 5
+let intLines = 4
 
 function toggle(id) {
 	let target = document.getElementById(id)
 	if (target.classList.contains(id)) {target.classList.remove(id)} else {target.classList.add(id)}
+}
+
+function toggle_text(isToggle = true) {
+	if (isToggle) {intText = (intText + 1) % 6}
+	let str = oText[intText], aDisplay = []
+	for (let i = 0; i < intLines; i++) {aDisplay.push(str)}
+	str = '<span>'+ aDisplay.join('<br>') + '</span>'
+	document.getElementById('control').innerHTML = str
+	document.getElementById('test').innerHTML = str
+}
+toggle_text(false)
+
+function toggle_lines() {
+	intLines = (intLines + 1) % 5
+	if (0 == intLines) {intLines = 1}
+	toggle_text(false)
 }
 
 function run(source = 'offscreen') {
